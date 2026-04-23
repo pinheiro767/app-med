@@ -8,6 +8,84 @@ const uploadsState = {
   4: { fotos: [], arquivos: [] }
 };
 
+const STORAGE_KEY = "auditoria_mmii_app_data_v1";
+
+function getInitialState() {
+  return {
+    membersState: { 1: [], 2: [], 3: [], 4: [] },
+    uploadsState: {
+      1: { fotos: [], arquivos: [] },
+      2: { fotos: [], arquivos: [] },
+      3: { fotos: [], arquivos: [] },
+      4: { fotos: [], arquivos: [] }
+    },
+    criterios: {},
+    observacoes: {}
+  };
+}
+
+function saveAppState() {
+  const payload = {
+    membersState,
+    uploadsState,
+    criterios: collectCriteriaValues(),
+    observacoes: collectObservationValues()
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+}
+
+function loadAppState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+
+  try {
+    const parsed = JSON.parse(raw);
+
+    if (parsed.membersState) {
+      Object.keys(parsed.membersState).forEach(groupId => {
+        membersState[groupId] = parsed.membersState[groupId];
+      });
+    }
+
+    if (parsed.uploadsState) {
+      Object.keys(parsed.uploadsState).forEach(groupId => {
+        uploadsState[groupId] = parsed.uploadsState[groupId];
+      });
+    }
+
+    window.__savedCriteria = parsed.criterios || {};
+    window.__savedObservacoes = parsed.observacoes || {};
+  } catch (e) {
+    console.error("Erro ao carregar dados salvos:", e);
+  }
+}
+
+function collectCriteriaValues() {
+  const result = {};
+  document.querySelectorAll(".score-input").forEach(input => {
+    result[input.id] = input.value;
+  });
+  return result;
+}
+
+function collectObservationValues() {
+  const result = {};
+  document.querySelectorAll("textarea[id^='obs-']").forEach(textarea => {
+    result[textarea.id] = textarea.value;
+  });
+  return result;
+}
+
+function restoreCriteriaValues() {
+  const savedCriteria = window.__savedCriteria || {};
+  Object.entries(savedCriteria).forEach(([id, value]) => {
+    const input = document.getElementById(id);
+    if (input) input.value = value;
+  });
+
+  const savedObs = window.__savedObservacoes || {};
+  Object.entries(savedObs).forEach(([id, value
+
 let chartInstance = null;
 
 function escapeHtml(text) {

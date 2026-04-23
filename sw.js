@@ -1,4 +1,4 @@
-const CACHE_NAME = "avaliacao-metodologias-medicina-v3";
+const CACHE_NAME = "avaliacao-metodologias-medicina-v4";
 
 const URLS_TO_CACHE = [
   "/",
@@ -12,45 +12,30 @@ const URLS_TO_CACHE = [
   "/static/icons/maskable-512.png"
 ];
 
-// instalar cache
-self.addEventListener("install", (event) => {
+self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(URLS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(URLS_TO_CACHE))
   );
   self.skipWaiting();
 });
 
-// ativar
-self.addEventListener("activate", (event) => {
+self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
+    caches.keys().then(keys =>
+      Promise.all(
         keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      );
-    })
+          .filter(key => key !== CACHE_NAME)
+          .map(key => caches.delete(key))
+      )
+    )
   );
   self.clients.claim();
 });
 
-// interceptar requisições
-self.addEventListener("fetch", (event) => {
+self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (response) {
-        return response;
-      }
-
-      return fetch(event.request)
-        .then((networkResponse) => {
-          return networkResponse;
-        })
-        .catch(() => {
-          return caches.match("/");
-        });
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request).catch(() => caches.match("/"));
     })
   );
 });

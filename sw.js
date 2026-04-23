@@ -1,4 +1,4 @@
-const CACHE_NAME = "avaliacao-anatomia-cache-v1";
+const CACHE_NAME ="avaliacao-metodologias-medicina-v2";";
 
 const URLS_TO_CACHE = [
   "/",

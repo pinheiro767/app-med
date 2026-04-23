@@ -136,11 +136,11 @@ function buildAudit() {
 
       <div class="inner-block">
         <h3>Fotos dos trabalhos do grupo</h3>
-        <input type="file" accept="image/*" multiple onchange="handlePhotos(${groupId}, this.files)">
+        <input type="file" accept="image/*" multiple class="photo-input" data-group="${groupId}">
         <div id="photo-preview-${groupId}" class="preview-grid" style="margin-top:12px;"></div>
 
         <h3 style="margin-top:16px;">Arquivos complementares</h3>
-        <input type="file" multiple onchange="handleFiles(${groupId}, this.files)">
+        <input type="file" multiple class="file-input" data-group="${groupId}">
         <div id="file-preview-${groupId}" style="margin-top:12px;"></div>
       </div>
 
@@ -158,6 +158,22 @@ function buildAudit() {
 
   document.querySelectorAll(".score-input").forEach(input => {
     input.addEventListener("input", updateAnalytics);
+  });
+}
+
+function bindUploadEvents() {
+  document.querySelectorAll(".photo-input").forEach(input => {
+    input.addEventListener("change", (event) => {
+      const groupId = Number(event.target.dataset.group);
+      handlePhotos(groupId, event.target.files);
+    });
+  });
+
+  document.querySelectorAll(".file-input").forEach(input => {
+    input.addEventListener("change", (event) => {
+      const groupId = Number(event.target.dataset.group);
+      handleFiles(groupId, event.target.files);
+    });
   });
 }
 
@@ -227,27 +243,37 @@ function renderMembers(groupId) {
 
 window.handlePhotos = function(groupId, files) {
   const preview = document.getElementById(`photo-preview-${groupId}`);
+  if (!preview) return;
+
   Array.from(files || []).forEach(file => {
+    if (!file.type.startsWith("image/")) return;
+
     uploadsState[groupId].fotos.push(file);
 
-    const reader = new FileReader();
-    reader.onload = e => {
-      const wrapper = document.createElement("div");
-      wrapper.className = "inner-block";
-      wrapper.style.padding = "10px";
+    const wrapper = document.createElement("div");
+    wrapper.className = "inner-block";
+    wrapper.style.padding = "10px";
 
-      wrapper.innerHTML = `
-        <img src="${e.target.result}" alt="${escapeHtml(file.name)}" class="preview-image">
-        <p class="small" style="margin-top:8px;">${escapeHtml(file.name)}</p>
-      `;
-      preview.appendChild(wrapper);
-    };
-    reader.readAsDataURL(file);
+    const img = document.createElement("img");
+    img.className = "preview-image";
+    img.alt = file.name;
+    img.src = URL.createObjectURL(file);
+
+    const caption = document.createElement("p");
+    caption.className = "small";
+    caption.style.marginTop = "8px";
+    caption.textContent = file.name;
+
+    wrapper.appendChild(img);
+    wrapper.appendChild(caption);
+    preview.appendChild(wrapper);
   });
 };
 
 window.handleFiles = function(groupId, files) {
   const preview = document.getElementById(`file-preview-${groupId}`);
+  if (!preview) return;
+
   Array.from(files || []).forEach(file => {
     uploadsState[groupId].arquivos.push(file);
 
@@ -259,6 +285,7 @@ window.handleFiles = function(groupId, files) {
       <p class="small"><strong>Tipo:</strong> ${escapeHtml(file.type || "não identificado")}</p>
       <p class="small"><strong>Tamanho:</strong> ${(file.size / 1024).toFixed(1)} KB</p>
     `;
+
     preview.appendChild(item);
   });
 };
@@ -398,6 +425,7 @@ function bootstrap() {
   buildCards();
   buildArticles();
   buildAudit();
+  bindUploadEvents();
   buildChart();
   updateTable();
   updateAnalytics();

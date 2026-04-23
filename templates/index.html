@@ -3,25 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <h1>Avaliação Metodologias Medicina</h1>>
+
+  <title>Avaliação Metodologias Medicina</title>
 
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 
-<link rel="icon" type="image/png" href="/static/icons/icon-192.png">
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-<meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#0f172a">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 </head>
+
 <body>
   <header class="hero">
     <div class="hero-content">
       <p class="eyebrow">Universidade Estadual de Maringá · DCM</p>
+
       <h1>Avaliação Metodologias Medicina</h1>
+
       <p class="hero-subtitle">
-        Plataforma para roteiros, avaliação estruturada, fotos dos trabalhos, artigos científicos e análise estatística.
+        Plataforma para roteiros, avaliação estruturada, fotos dos trabalhos,
+        artigos científicos e análise estatística.
       </p>
 
       <div class="hero-chips">
@@ -30,6 +36,12 @@
         <span class="chip">Excel</span>
         <span class="chip">PDF</span>
         <span class="chip">Gráfico</span>
+      </div>
+
+      <div class="button-group" style="margin-top:16px;">
+        <button type="button" id="installAppBtn" style="display:none;">
+          Baixar aplicativo
+        </button>
       </div>
     </div>
   </header>
@@ -75,6 +87,7 @@
           <h2>Tabela e gráfico</h2>
           <p class="small">Exporte os dados avaliados e atualize o gráfico das médias.</p>
         </div>
+
         <div class="button-group">
           <button type="button" onclick="updateAnalytics()">Atualizar gráfico</button>
           <button type="button" onclick="exportExcel()">Exportar Excel</button>

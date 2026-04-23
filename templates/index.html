@@ -3,33 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Auditoria Anatomia MMII</title>
+  <title>Auditoria Anatômica MMII</title>
 
+  <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/static/css/style.css">
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
-
   <header class="hero">
     <div class="hero-content">
       <p class="eyebrow">Universidade Estadual de Maringá · DCM</p>
-      <h1>Auditoria Anatomia MMII</h1>
+      <h1>Auditoria Anatômica de MMII</h1>
       <p class="hero-subtitle">
-        Plataforma para roteiros dos grupos, avaliação prática, checklist, fotos, gráfico e tabela dinâmica.
+        Plataforma para roteiros, avaliação estruturada, fotos dos trabalhos, artigos científicos e análise estatística.
       </p>
+
+      <div class="hero-chips">
+        <span class="chip">Banco completo</span>
+        <span class="chip">Fotos ilimitadas</span>
+        <span class="chip">Excel</span>
+        <span class="chip">PDF</span>
+        <span class="chip">Gráfico</span>
+      </div>
     </div>
   </header>
 
-  <main class="container">
-
+  <main class="container" id="app-root">
     <section class="panel">
       <div class="section-top">
         <div>
-          <p class="section-kicker">Seção 1</p>
-          <h2>Roteiros dos grupos</h2>
-          <p class="small">Conteúdo integral carregado a partir do banco de dados.</p>
+          <p class="section-kicker">Roteiros</p>
+          <h2>Grupos e conteúdos</h2>
+          <p class="small">Texto integral do banco de dados dos grupos.</p>
         </div>
       </div>
       <div id="cards" class="cards-grid"></div>
@@ -38,33 +46,41 @@
     <section class="panel">
       <div class="section-top">
         <div>
-          <p class="section-kicker">Seção 2</p>
-          <h2>Auditoria e avaliação</h2>
-          <p class="small">Critérios por grupo, parecer técnico, fotos, arquivos e integrantes.</p>
+          <p class="section-kicker">Base científica</p>
+          <h2>Artigos recentes sobre metodologia ativa em anatomia</h2>
+          <p class="small">Fundamentação para a proposta pedagógica e avaliativa.</p>
+        </div>
+      </div>
+      <div id="articles" class="science-grid"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-top">
+        <div>
+          <p class="section-kicker">Avaliação</p>
+          <h2>Auditoria técnica por grupo</h2>
+          <p class="small">Checklist, parecer técnico, fotos, arquivos e notas por integrante.</p>
         </div>
       </div>
       <div id="audit"></div>
     </section>
 
     <section class="panel">
-      <div class="section-top">
+      <div class="section-top action-bar">
         <div>
-          <p class="section-kicker">Seção 3</p>
-          <h2>Gráfico</h2>
-          <p class="small">Média automática por grupo.</p>
+          <p class="section-kicker">Estatística</p>
+          <h2>Tabela e gráfico</h2>
+          <p class="small">Exporte os dados avaliados e atualize o gráfico das médias.</p>
+        </div>
+        <div class="button-group">
+          <button type="button" onclick="updateAnalytics()">Atualizar gráfico</button>
+          <button type="button" onclick="exportExcel()">Exportar Excel</button>
+          <button type="button" onclick="gerarPDF()">Gerar PDF</button>
         </div>
       </div>
+
       <div class="chart-wrap">
         <canvas id="chart"></canvas>
-      </div>
-    </section>
-
-    <section class="panel">
-      <div class="section-top">
-        <div>
-          <p class="section-kicker">Seção 4</p>
-          <h2>Tabela geral</h2>
-        </div>
       </div>
 
       <div class="table-wrap">
@@ -72,21 +88,17 @@
           <thead>
             <tr>
               <th>Grupo</th>
+              <th>Área</th>
               <th>Integrante</th>
               <th>Nota</th>
               <th>Observação</th>
+              <th>Média do grupo</th>
             </tr>
           </thead>
           <tbody id="grade-body"></tbody>
         </table>
       </div>
-
-      <div class="actions">
-        <button type="button" onclick="exportExcel()">Exportar Excel</button>
-        <button type="button" onclick="gerarPDF()">Gerar PDF</button>
-      </div>
     </section>
-
   </main>
 
   <script type="module" src="/static/js/app.js"></script>

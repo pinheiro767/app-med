@@ -1,7 +1,7 @@
 {
-  "name": "Avaliação Anatômica MMII",
-  "short_name": "MMII",
-  "description": "Aplicativo para avaliação prática de anatomia dos membros inferiores",
+  "name": "Avaliação Metodologias Medicina",
+  "short_name": "MetodMed",
+  "description": "Aplicativo para avaliação prática de anatomia",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",

@@ -1,5 +1,7 @@
 import { GROUP_DATABASE, AUDIT_DATABASE, ARTICLES } from "./database.js";
 
+const STORAGE_KEY = "auditoria_mmii_app_data_v2";
+
 const membersState = { 1: [], 2: [], 3: [], 4: [] };
 const uploadsState = {
   1: { fotos: [], arquivos: [] },
@@ -8,20 +10,17 @@ const uploadsState = {
   4: { fotos: [], arquivos: [] }
 };
 
-const STORAGE_KEY = "auditoria_mmii_app_data_v1";
+let chartInstance = null;
+window.__savedCriteria = {};
+window.__savedObservacoes = {};
 
-function getInitialState() {
-  return {
-    membersState: { 1: [], 2: [], 3: [], 4: [] },
-    uploadsState: {
-      1: { fotos: [], arquivos: [] },
-      2: { fotos: [], arquivos: [] },
-      3: { fotos: [], arquivos: [] },
-      4: { fotos: [], arquivos: [] }
-    },
-    criterios: {},
-    observacoes: {}
-  };
+function escapeHtml(text) {
+  return String(text ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function saveAppState() {
@@ -55,8 +54,8 @@ function loadAppState() {
 
     window.__savedCriteria = parsed.criterios || {};
     window.__savedObservacoes = parsed.observacoes || {};
-  } catch (e) {
-    console.error("Erro ao carregar dados salvos:", e);
+  } catch (error) {
+    console.error("Erro ao carregar dados salvos:", error);
   }
 }
 
@@ -84,17 +83,10 @@ function restoreCriteriaValues() {
   });
 
   const savedObs = window.__savedObservacoes || {};
-  Object.entries(savedObs).forEach(([id, value
-
-let chartInstance = null;
-
-function escapeHtml(text) {
-  return String(text ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+  Object.entries(savedObs).forEach(([id, value]) => {
+    const textarea = document.getElementById(id);
+    if (textarea) textarea.value = value;
+  });
 }
 
 function buildCards() {
@@ -156,7 +148,7 @@ function buildArticles() {
       <h3>${escapeHtml(article.titulo)}</h3>
       <p>${escapeHtml(article.descricao)}</p>
       <div class="science-footer">
-        <p><strong>DOI:</strong> ${escapeHtml(article.doi)}</p>
+        <p><strong>DOI:</strong> ${escapeHtml(article.doi || "")}</p>
         <a href="${article.link}" target="_blank" rel="noopener noreferrer">Abrir artigo</a>
       </div>
     `;
@@ -235,7 +227,14 @@ function buildAudit() {
   });
 
   document.querySelectorAll(".score-input").forEach(input => {
-    input.addEventListener("input", updateAnalytics);
+    input.addEventListener("input", () => {
+      updateAnalytics();
+      saveAppState();
+    });
+  });
+
+  document.querySelectorAll("textarea[id^='obs-']").forEach(textarea => {
+    textarea.addEventListener("input", saveAppState);
   });
 }
 
@@ -244,6 +243,7 @@ function bindUploadEvents() {
     input.addEventListener("change", (event) => {
       const groupId = Number(event.target.dataset.group);
       handlePhotos(groupId, event.target.files);
+      event.target.value = "";
     });
   });
 
@@ -251,6 +251,7 @@ function bindUploadEvents() {
     input.addEventListener("change", (event) => {
       const groupId = Number(event.target.dataset.group);
       handleFiles(groupId, event.target.files);
+      event.target.value = "";
     });
   });
 }
@@ -269,21 +270,26 @@ window.addMember = function(groupId) {
   renderMembers(groupId);
   updateTable();
   updateAnalytics();
+  saveAppState();
 };
 
 window.removeMember = function(groupId, index) {
   membersState[groupId].splice(index, 1);
   renderMembers(groupId);
   updateTable();
+  saveAppState();
 };
 
 window.updateMember = function(groupId, index, field, value) {
   membersState[groupId][index][field] = value;
   updateTable();
+  saveAppState();
 };
 
 function renderMembers(groupId) {
   const container = document.getElementById(`members-${groupId}`);
+  if (!container) return;
+
   container.innerHTML = "";
 
   membersState[groupId].forEach((member, index) => {
@@ -320,52 +326,87 @@ function renderMembers(groupId) {
 }
 
 window.handlePhotos = function(groupId, files) {
-  const preview = document.getElementById(`photo-preview-${groupId}`);
-  if (!preview) return;
-
   Array.from(files || []).forEach(file => {
     if (!file.type.startsWith("image/")) return;
 
-    uploadsState[groupId].fotos.push(file);
+    const reader = new FileReader();
+    reader.onload = e => {
+      uploadsState[groupId].fotos.push({
+        nome: file.name,
+        tipo: file.type,
+        dados: e.target.result
+      });
+      renderSavedPhotos(groupId);
+      saveAppState();
+    };
+    reader.readAsDataURL(file);
+  });
+};
 
+function renderSavedPhotos(groupId) {
+  const preview = document.getElementById(`photo-preview-${groupId}`);
+  if (!preview) return;
+
+  preview.innerHTML = "";
+
+  uploadsState[groupId].fotos.forEach((foto, index) => {
     const wrapper = document.createElement("div");
     wrapper.className = "inner-block";
     wrapper.style.padding = "10px";
 
-    const img = document.createElement("img");
-    img.className = "preview-image";
-    img.alt = file.name;
-    img.src = URL.createObjectURL(file);
+    wrapper.innerHTML = `
+      <img src="${foto.dados}" alt="${escapeHtml(foto.nome)}" class="preview-image">
+      <p class="small" style="margin-top:8px;">${escapeHtml(foto.nome)}</p>
+      <button type="button" onclick="removePhoto(${groupId}, ${index})">Remover foto</button>
+    `;
 
-    const caption = document.createElement("p");
-    caption.className = "small";
-    caption.style.marginTop = "8px";
-    caption.textContent = file.name;
-
-    wrapper.appendChild(img);
-    wrapper.appendChild(caption);
     preview.appendChild(wrapper);
   });
+}
+
+window.removePhoto = function(groupId, index) {
+  uploadsState[groupId].fotos.splice(index, 1);
+  renderSavedPhotos(groupId);
+  saveAppState();
 };
 
 window.handleFiles = function(groupId, files) {
+  Array.from(files || []).forEach(file => {
+    uploadsState[groupId].arquivos.push({
+      nome: file.name,
+      tipo: file.type || "não identificado",
+      tamanho: (file.size / 1024).toFixed(1) + " KB"
+    });
+  });
+
+  renderSavedFiles(groupId);
+  saveAppState();
+};
+
+function renderSavedFiles(groupId) {
   const preview = document.getElementById(`file-preview-${groupId}`);
   if (!preview) return;
 
-  Array.from(files || []).forEach(file => {
-    uploadsState[groupId].arquivos.push(file);
+  preview.innerHTML = "";
 
+  uploadsState[groupId].arquivos.forEach((file, index) => {
     const item = document.createElement("div");
     item.className = "inner-block";
     item.style.padding = "10px";
     item.innerHTML = `
-      <p><strong>Arquivo:</strong> ${escapeHtml(file.name)}</p>
-      <p class="small"><strong>Tipo:</strong> ${escapeHtml(file.type || "não identificado")}</p>
-      <p class="small"><strong>Tamanho:</strong> ${(file.size / 1024).toFixed(1)} KB</p>
+      <p><strong>Arquivo:</strong> ${escapeHtml(file.nome)}</p>
+      <p class="small"><strong>Tipo:</strong> ${escapeHtml(file.tipo)}</p>
+      <p class="small"><strong>Tamanho:</strong> ${escapeHtml(file.tamanho)}</p>
+      <button type="button" onclick="removeFile(${groupId}, ${index})">Remover arquivo</button>
     `;
-
     preview.appendChild(item);
   });
+}
+
+window.removeFile = function(groupId, index) {
+  uploadsState[groupId].arquivos.splice(index, 1);
+  renderSavedFiles(groupId);
+  saveAppState();
 };
 
 function getGroupCriteriaScores(groupId) {
@@ -382,6 +423,7 @@ function getGroupMean(groupId) {
 
 function buildChart() {
   const ctx = document.getElementById("chart");
+  if (!ctx) return;
 
   chartInstance = new Chart(ctx, {
     type: "bar",
@@ -399,9 +441,7 @@ function buildChart() {
         y: {
           min: 0,
           max: 10,
-          ticks: {
-            stepSize: 1
-          }
+          ticks: { stepSize: 1 }
         }
       }
     }
@@ -428,6 +468,8 @@ window.updateAnalytics = function() {
 
 function updateTable() {
   const tbody = document.getElementById("grade-body");
+  if (!tbody) return;
+
   tbody.innerHTML = "";
 
   [1, 2, 3, 4].forEach(groupId => {
@@ -480,16 +522,40 @@ window.exportExcel = function() {
 
 window.gerarPDF = async function() {
   const element = document.getElementById("app-root");
-  const canvas = await html2canvas(element, { scale: 1.5, useCORS: true });
-  const imgData = canvas.toDataURL("image/png");
+  if (!element) return;
 
+  const canvas = await html2canvas(element, {
+    scale: 1.5,
+    useCORS: true,
+    scrollY: -window.scrollY
+  });
+
+  const imgData = canvas.toDataURL("image/png");
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF("p", "mm", "a4");
 
-  const pageWidth = 190;
-  const pageHeight = (canvas.height * pageWidth) / canvas.width;
+  const pageWidth = 210;
+  const pageHeight = 297;
+  const margin = 10;
+  const usableWidth = pageWidth - margin * 2;
+  const usableHeight = pageHeight - margin * 2;
 
-  pdf.addImage(imgData, "PNG", 10, 10, pageWidth, pageHeight);
+  const imgWidth = usableWidth;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  let heightLeft = imgHeight;
+  let position = margin;
+
+  pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
+  heightLeft -= usableHeight;
+
+  while (heightLeft > 0) {
+    position = heightLeft - imgHeight + margin;
+    pdf.addPage();
+    pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
+    heightLeft -= usableHeight;
+  }
+
   pdf.save("avaliacao_mmii.pdf");
 };
 
@@ -500,10 +566,19 @@ function registerSW() {
 }
 
 function bootstrap() {
+  loadAppState();
   buildCards();
   buildArticles();
   buildAudit();
   bindUploadEvents();
+  restoreCriteriaValues();
+
+  [1, 2, 3, 4].forEach(groupId => {
+    renderMembers(groupId);
+    renderSavedPhotos(groupId);
+    renderSavedFiles(groupId);
+  });
+
   buildChart();
   updateTable();
   updateAnalytics();

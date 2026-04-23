@@ -1,8 +1,9 @@
 {
-  "name": "Avaliação de Metodologias Ativas",
-  "short_name": "MetodAtivas",
+  "name": "Avaliação Metodologias Medicina",
+  "short_name": "MetodMed",
   "description": "Aplicativo para avaliação de metodologias ativas no ensino médico",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",

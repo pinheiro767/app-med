@@ -12,12 +12,6 @@ function escapeHtml(text) {
     .replaceAll("'", "&#039;");
 }
 
-window.toggleGroup = function(groupId) {
-  const target = document.getElementById(`group-body-${groupId}`);
-  if (!target) return;
-  target.classList.toggle("hidden");
-};
-
 window.exportExcel = function() {
   const rows = [["Grupo", "Integrante", "Nota", "Observação"]];
   document.querySelectorAll("#grade-body tr").forEach(tr => {
@@ -42,8 +36,7 @@ window.exportExcel = function() {
 };
 
 window.gerarPDF = async function() {
-  const element = document.body;
-  const canvas = await html2canvas(element, { scale: 1 });
+  const canvas = await html2canvas(document.body, { scale: 1 });
   const imgData = canvas.toDataURL("image/png");
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF("p", "mm", "a4");
@@ -62,18 +55,18 @@ function buildCards() {
   cards.innerHTML = "";
 
   Object.entries(GROUP_DATABASE).forEach(([groupId, group]) => {
-    const section = document.createElement("section");
-    section.className = "card";
+    const section = document.createElement("details");
+    section.className = "card details-card";
 
     let html = `
-      <button type="button" class="card-header" onclick="toggleGroup(${groupId})">
+      <summary class="card-header">
         <span class="badge">Grupo ${groupId}</span>
         <div>
           <h2>${escapeHtml(group.titulo)}</h2>
           <p>${escapeHtml(group.subtitulo)}</p>
         </div>
-      </button>
-      <div class="card-body hidden" id="group-body-${groupId}">
+      </summary>
+      <div class="card-body">
     `;
 
     group.secoes.forEach(sec => {
@@ -143,6 +136,14 @@ function buildAudit() {
       <div class="inner-block">
         <h3>Parecer técnico</h3>
         <textarea rows="4" placeholder="Observações"></textarea>
+      </div>
+
+      <div class="inner-block">
+        <h3>Fotos e arquivos</h3>
+        <label>Fotos ilimitadas</label>
+        <input type="file" multiple accept="image/*">
+        <label style="display:block; margin-top:12px;">Arquivos</label>
+        <input type="file" multiple>
       </div>
 
       <div class="inner-block">

@@ -1,6 +1,13 @@
-import { GROUP_DATABASE, AUDIT_DATABASE } from "./database.js";
+import { GROUP_DATABASE, AUDIT_DATABASE, ARTICLES } from "./database.js";
 
 const membersState = { 1: [], 2: [], 3: [], 4: [] };
+const uploadsState = {
+  1: { fotos: [], arquivos: [] },
+  2: { fotos: [], arquivos: [] },
+  3: { fotos: [], arquivos: [] },
+  4: { fotos: [], arquivos: [] }
+};
+
 let chartInstance = null;
 
 function escapeHtml(text) {
@@ -12,73 +19,34 @@ function escapeHtml(text) {
     .replaceAll("'", "&#039;");
 }
 
-window.exportExcel = function() {
-  const rows = [["Grupo", "Integrante", "Nota", "Observação"]];
-  document.querySelectorAll("#grade-body tr").forEach(tr => {
-    const cols = tr.querySelectorAll("td");
-    rows.push([
-      cols[0]?.innerText || "",
-      cols[1]?.innerText || "",
-      cols[2]?.innerText || "",
-      cols[3]?.innerText || ""
-    ]);
-  });
-
-  const csv = rows
-    .map(row => row.map(v => `"${String(v).replaceAll('"', '""')}"`).join(";"))
-    .join("\n");
-
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "avaliacao_anatomia.csv";
-  link.click();
-};
-
-window.gerarPDF = async function() {
-  const canvas = await html2canvas(document.body, { scale: 1 });
-  const imgData = canvas.toDataURL("image/png");
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF("p", "mm", "a4");
-
-  const pageWidth = 190;
-  const pageHeight = (canvas.height * pageWidth) / canvas.width;
-
-  pdf.addImage(imgData, "PNG", 10, 10, pageWidth, pageHeight);
-  pdf.save("avaliacao_anatomia.pdf");
-};
-
 function buildCards() {
   const cards = document.getElementById("cards");
-  if (!cards) return;
-
   cards.innerHTML = "";
 
   Object.entries(GROUP_DATABASE).forEach(([groupId, group]) => {
-    const section = document.createElement("details");
-    section.className = "card details-card";
+    const section = document.createElement("section");
+    section.className = "card";
 
     let html = `
-      <summary class="card-header">
+      <button class="card-header" onclick="toggleGroup(${groupId})">
         <span class="badge">Grupo ${groupId}</span>
         <div>
           <h2>${escapeHtml(group.titulo)}</h2>
           <p>${escapeHtml(group.subtitulo)}</p>
         </div>
-      </summary>
-      <div class="card-body">
+      </button>
+      <div class="card-body hidden" id="group-body-${groupId}">
     `;
 
     group.secoes.forEach(sec => {
-      html += `<div class="inner-block">`;
-      html += `<h3>${escapeHtml(sec.titulo)}</h3>`;
+      html += `<div class="inner-block"><h3>${escapeHtml(sec.titulo)}</h3>`;
 
-      if (sec.itens && Array.isArray(sec.itens)) {
-        html += `<ol>`;
+      if (sec.itens) {
+        html += "<ol>";
         sec.itens.forEach(item => {
           html += `<li>${escapeHtml(item)}</li>`;
         });
-        html += `</ol>`;
+        html += "</ol>";
       }
 
       if (sec.texto) {
@@ -94,10 +62,33 @@ function buildCards() {
   });
 }
 
+function buildArticles() {
+  const container = document.getElementById("articles");
+  container.innerHTML = "";
+
+  ARTICLES.forEach(article => {
+    const card = document.createElement("article");
+    card.className = "science-card";
+
+    card.innerHTML = `
+      <div class="science-meta">
+        <span class="science-year">${escapeHtml(article.ano)}</span>
+        <span class="science-journal">${escapeHtml(article.revista)}</span>
+      </div>
+      <h3>${escapeHtml(article.titulo)}</h3>
+      <p>${escapeHtml(article.descricao)}</p>
+      <div class="science-footer">
+        <p><strong>DOI:</strong> ${escapeHtml(article.doi)}</p>
+        <a href="${article.link}" target="_blank" rel="noopener noreferrer">Abrir artigo</a>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
 function buildAudit() {
   const audit = document.getElementById("audit");
-  if (!audit) return;
-
   audit.innerHTML = "";
 
   Object.entries(AUDIT_DATABASE).forEach(([groupId, group]) => {
@@ -112,7 +103,8 @@ function buildAudit() {
           step="0.1"
           class="score-input"
           data-group="${groupId}"
-          placeholder="0 a 10"
+          data-idx="${idx}"
+          placeholder="Digite a nota de 0 a 10"
         >
       </div>
     `).join("");
@@ -135,15 +127,21 @@ function buildAudit() {
 
       <div class="inner-block">
         <h3>Parecer técnico</h3>
-        <textarea rows="4" placeholder="Observações"></textarea>
+        <textarea
+          id="obs-${groupId}"
+          rows="4"
+          placeholder="Registre observações anatômicas, topográficas, funcionais, biomecânicas e metodológicas."
+        ></textarea>
       </div>
 
       <div class="inner-block">
-        <h3>Fotos e arquivos</h3>
-        <label>Fotos ilimitadas</label>
-        <input type="file" multiple accept="image/*">
-        <label style="display:block; margin-top:12px;">Arquivos</label>
-        <input type="file" multiple>
+        <h3>Fotos dos trabalhos do grupo</h3>
+        <input type="file" accept="image/*" multiple onchange="handlePhotos(${groupId}, this.files)">
+        <div id="photo-preview-${groupId}" class="preview-grid" style="margin-top:12px;"></div>
+
+        <h3 style="margin-top:16px;">Arquivos complementares</h3>
+        <input type="file" multiple onchange="handleFiles(${groupId}, this.files)">
+        <div id="file-preview-${groupId}" style="margin-top:12px;"></div>
       </div>
 
       <div class="inner-block">
@@ -163,10 +161,20 @@ function buildAudit() {
   });
 }
 
+window.toggleGroup = function(groupId) {
+  const target = document.getElementById(`group-body-${groupId}`);
+  target.classList.toggle("hidden");
+};
+
 window.addMember = function(groupId) {
-  membersState[groupId].push({ nome: "", nota: "", obs: "" });
+  membersState[groupId].push({
+    nome: "",
+    nota: "",
+    obs: ""
+  });
   renderMembers(groupId);
   updateTable();
+  updateAnalytics();
 };
 
 window.removeMember = function(groupId, index) {
@@ -182,13 +190,12 @@ window.updateMember = function(groupId, index, field, value) {
 
 function renderMembers(groupId) {
   const container = document.getElementById(`members-${groupId}`);
-  if (!container) return;
-
   container.innerHTML = "";
 
   membersState[groupId].forEach((member, index) => {
     const row = document.createElement("div");
     row.className = "member-row";
+
     row.innerHTML = `
       <input
         type="text"
@@ -213,22 +220,63 @@ function renderMembers(groupId) {
       >
       <button type="button" onclick="removeMember(${groupId}, ${index})">Remover</button>
     `;
+
     container.appendChild(row);
   });
 }
 
-function getGroupMean(groupId) {
-  const values = Array.from(document.querySelectorAll(`.score-input[data-group="${groupId}"]`))
+window.handlePhotos = function(groupId, files) {
+  const preview = document.getElementById(`photo-preview-${groupId}`);
+  Array.from(files || []).forEach(file => {
+    uploadsState[groupId].fotos.push(file);
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "inner-block";
+      wrapper.style.padding = "10px";
+
+      wrapper.innerHTML = `
+        <img src="${e.target.result}" alt="${escapeHtml(file.name)}" class="preview-image">
+        <p class="small" style="margin-top:8px;">${escapeHtml(file.name)}</p>
+      `;
+      preview.appendChild(wrapper);
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
+window.handleFiles = function(groupId, files) {
+  const preview = document.getElementById(`file-preview-${groupId}`);
+  Array.from(files || []).forEach(file => {
+    uploadsState[groupId].arquivos.push(file);
+
+    const item = document.createElement("div");
+    item.className = "inner-block";
+    item.style.padding = "10px";
+    item.innerHTML = `
+      <p><strong>Arquivo:</strong> ${escapeHtml(file.name)}</p>
+      <p class="small"><strong>Tipo:</strong> ${escapeHtml(file.type || "não identificado")}</p>
+      <p class="small"><strong>Tamanho:</strong> ${(file.size / 1024).toFixed(1)} KB</p>
+    `;
+    preview.appendChild(item);
+  });
+};
+
+function getGroupCriteriaScores(groupId) {
+  return Array.from(document.querySelectorAll(`.score-input[data-group="${groupId}"]`))
     .map(input => Number(input.value))
     .filter(value => !Number.isNaN(value));
+}
 
+function getGroupMean(groupId) {
+  const values = getGroupCriteriaScores(groupId);
   if (!values.length) return 0;
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
 function buildChart() {
   const ctx = document.getElementById("chart");
-  if (!ctx || typeof Chart === "undefined") return;
 
   chartInstance = new Chart(ctx, {
     type: "bar",
@@ -246,46 +294,99 @@ function buildChart() {
         y: {
           min: 0,
           max: 10,
-          ticks: { stepSize: 1 }
+          ticks: {
+            stepSize: 1
+          }
         }
       }
     }
   });
 }
 
-function updateAnalytics() {
+window.updateAnalytics = function() {
   const means = [1, 2, 3, 4].map(groupId => getGroupMean(groupId));
 
   [1, 2, 3, 4].forEach(groupId => {
     const meanBox = document.getElementById(`mean-${groupId}`);
-    if (meanBox) meanBox.textContent = getGroupMean(groupId).toFixed(2);
+    if (meanBox) {
+      meanBox.textContent = getGroupMean(groupId).toFixed(2);
+    }
   });
 
   if (chartInstance) {
     chartInstance.data.datasets[0].data = means;
     chartInstance.update();
   }
-}
+
+  updateTable();
+};
 
 function updateTable() {
   const tbody = document.getElementById("grade-body");
-  if (!tbody) return;
-
   tbody.innerHTML = "";
 
   [1, 2, 3, 4].forEach(groupId => {
-    membersState[groupId].forEach(member => {
+    const area = AUDIT_DATABASE[groupId].area;
+    const mediaGrupo = getGroupMean(groupId).toFixed(2);
+
+    if (membersState[groupId].length === 0) {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>Grupo ${groupId}</td>
-        <td>${escapeHtml(member.nome)}</td>
-        <td>${escapeHtml(member.nota)}</td>
-        <td>${escapeHtml(member.obs)}</td>
+        <td>${escapeHtml(area)}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>${mediaGrupo}</td>
       `;
       tbody.appendChild(tr);
-    });
+    } else {
+      membersState[groupId].forEach(member => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>Grupo ${groupId}</td>
+          <td>${escapeHtml(area)}</td>
+          <td>${escapeHtml(member.nome)}</td>
+          <td>${escapeHtml(member.nota)}</td>
+          <td>${escapeHtml(member.obs)}</td>
+          <td>${mediaGrupo}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
   });
 }
+
+window.exportExcel = function() {
+  let csv = "Grupo;Área;Integrante;Nota;Observação;Média do Grupo\n";
+
+  document.querySelectorAll("#grade-body tr").forEach(row => {
+    const cols = row.querySelectorAll("td");
+    const values = Array.from(cols).map(td => `"${td.innerText.replaceAll('"', '""')}"`);
+    csv += values.join(";") + "\n";
+  });
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "avaliacao_mmii.csv";
+  link.click();
+};
+
+window.gerarPDF = async function() {
+  const element = document.getElementById("app-root");
+  const canvas = await html2canvas(element, { scale: 1.5, useCORS: true });
+  const imgData = canvas.toDataURL("image/png");
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p", "mm", "a4");
+
+  const pageWidth = 190;
+  const pageHeight = (canvas.height * pageWidth) / canvas.width;
+
+  pdf.addImage(imgData, "PNG", 10, 10, pageWidth, pageHeight);
+  pdf.save("avaliacao_mmii.pdf");
+};
 
 function registerSW() {
   if ("serviceWorker" in navigator) {
@@ -295,6 +396,7 @@ function registerSW() {
 
 function bootstrap() {
   buildCards();
+  buildArticles();
   buildAudit();
   buildChart();
   updateTable();

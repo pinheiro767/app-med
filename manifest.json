@@ -1,7 +1,7 @@
 {
-  "name": "Avaliação Metodologias Medicina",
-  "short_name": "MetodMed",
-  "description": "Aplicativo para avaliação prática de anatomia",
+  "name": "Avaliação de Metodologias Ativas",
+  "short_name": "MetodAtivas",
+  "description": "Aplicativo para avaliação de metodologias ativas no ensino médico",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",

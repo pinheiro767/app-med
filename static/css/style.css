@@ -259,4 +259,24 @@ th, td{
     width:fit-content;
     padding:0 14px;
   }
+
+  details > summary {
+  list-style: none;
 }
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.details-card .card-body {
+  display: none;
+}
+
+.details-card[open] .card-body {
+  display: block;
+}
+
+.details-card summary {
+  cursor: pointer;
+}
+ }

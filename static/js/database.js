@@ -76,6 +76,7 @@ export const GROUP_DATABASE = {
       }
     ]
   },
+
   2: {
     titulo: "GRUPO 2 - Representar no esqueleto a drenagem venosa e os linfonodos dos MMII",
     subtitulo: "ANATOMIA TOPOGRÁFICA DE MMII – Aula 1",
@@ -134,6 +135,7 @@ export const GROUP_DATABASE = {
       }
     ]
   },
+
   3: {
     titulo: "GRUPO 3 - Representar as aa. dos MMII",
     subtitulo: "ANATOMIA TOPOGRÁFICA DE MMII – Aula 1",
@@ -184,6 +186,7 @@ export const GROUP_DATABASE = {
       }
     ]
   },
+
   4: {
     titulo: "GRUPO 4 - Casos clínicos aplicados à Miologia",
     subtitulo: "ANATOMIA TOPOGRÁFICA DE MMII – Aula 1",
@@ -242,3 +245,70 @@ export const AUDIT_DATABASE = {
     ]
   }
 };
+
+export const ARTICLES = [
+  {
+    titulo: "Transforming histology students from passive lecture listeners to active classroom participants",
+    revista: "Anatomical Sciences Education",
+    ano: "2024",
+    doi: "10.1002/ase.2463",
+    link: "https://anatomypubs.onlinelibrary.wiley.com/doi/10.1002/ase.2463",
+    descricao: "Mostra como estratégias de aprendizagem ativa aumentam participação e envolvimento em disciplinas morfológicas."
+  },
+  {
+    titulo: "Improving student learning and performance through a flipped classroom teaching model in anatomy education",
+    revista: "Anatomical Sciences Education",
+    ano: "2023",
+    doi: "10.1002/ase.2351",
+    link: "https://anatomypubs.onlinelibrary.wiley.com/doi/10.1002/ase.2351",
+    descricao: "Fundamenta o estudo prévio e o uso do tempo presencial para prática, discussão e resolução de dúvidas."
+  },
+  {
+    titulo: "Flipped classroom assisted by Rain Classroom for anatomy practical classes",
+    revista: "Anatomical Sciences Education",
+    ano: "2023",
+    doi: "10.1002/ase.2348",
+    link: "https://anatomypubs.onlinelibrary.wiley.com/doi/10.1002/ase.2348",
+    descricao: "Reforça a integração entre ferramenta digital e prática anatômica."
+  },
+  {
+    titulo: "Collaborative quizzes in a condensed human anatomy course",
+    revista: "BMC Medical Education",
+    ano: "2024",
+    doi: "10.1186/s12909-024-06416-9",
+    link: "https://bmcmededuc.biomedcentral.com/articles/10.1186/s12909-024-06416-9",
+    descricao: "Muito útil para justificar quiz colaborativo, participação em grupo e preparo para avaliação."
+  },
+  {
+    titulo: "Haptic experience to significantly motivate anatomy learning in comparison with a traditional 2D workshop",
+    revista: "BMC Medical Education",
+    ano: "2024",
+    doi: "10.1186/s12909-024-05829-w",
+    link: "https://bmcmededuc.biomedcentral.com/articles/10.1186/s12909-024-05829-w",
+    descricao: "Apoia o uso de materiais físicos simples e aprendizagem tátil na anatomia."
+  },
+  {
+    titulo: "Flipped and Peer-Assisted teaching: a new model in virtual anatomy education",
+    revista: "BMC Medical Education",
+    ano: "2024",
+    doi: "10.1186/s12909-024-05697-4",
+    link: "https://bmcmededuc.biomedcentral.com/articles/10.1186/s12909-024-05697-4",
+    descricao: "Ajuda a justificar ensino entre pares e protagonismo dos estudantes."
+  },
+  {
+    titulo: "An exploration of students' use of digital resources for self-directed anatomy learning",
+    revista: "BMC Medical Education",
+    ano: "2024",
+    doi: "10.1186/s12909-023-04987-7",
+    link: "https://bmcmededuc.biomedcentral.com/articles/10.1186/s12909-023-04987-7",
+    descricao: "Sustenta o uso do aplicativo como apoio ao estudo autônomo e organização do conteúdo."
+  },
+  {
+    titulo: "Exploring the use of a digital anatomy learning platform in a medical curriculum",
+    revista: "Anatomical Sciences Education",
+    ano: "2024",
+    doi: "10.1002/ase.2384",
+    link: "https://anatomypubs.onlinelibrary.wiley.com/doi/abs/10.1002/ase.2384",
+    descricao: "Dá suporte ao uso de plataforma digital como recurso curricular em anatomia."
+  }
+];

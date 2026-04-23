@@ -586,3 +586,28 @@ function bootstrap() {
 
 bootstrap();
 registerSW();
+let deferredPrompt = null;
+
+window.addEventListener("beforeinstallprompt", event => {
+  event.preventDefault();
+  deferredPrompt = event;
+
+  const installBtn = document.getElementById("installAppBtn");
+  if (installBtn) {
+    installBtn.style.display = "inline-flex";
+  }
+});
+
+const installBtn = document.getElementById("installAppBtn");
+
+if (installBtn) {
+  installBtn.addEventListener("click", async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+
+    deferredPrompt = null;
+    installBtn.style.display = "none";
+  });
+}

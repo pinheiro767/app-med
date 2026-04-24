@@ -218,12 +218,12 @@ export const AUDIT_DATABASE = {
     ]
   },
   2: {
-    area: "Drenagem Venosa e Linfática",
-    roteiro: "Roteiro 2",
-    criterios: [
-      "Trajeto da Safena: A lã da v. safena magna passa anteriormente ao maleolo medial e atinge o hiato safeno?",
-      "Confluência Profunda: A representação das vv. tibiais e poplítea respeita a profundidade em relação ao sistema superficial?",
-      "Cadeias de Linfonodos: A espuma ou papel que representa os Linfonodos Inguinais (superficiais e profundos) está posicionada corretamente?"
+area: "Drenagem Venosa e Linfática",
+roteiro: "Roteiro 2",
+criterios: [
+"Trajeto da Safena e Sistema Superficial: A representação do sistema venoso superficial demonstra corretamente o trajeto da v. safena magna desde o arco venoso dorsal do pé e margem medial do pé, passando anteriormente ao maléolo medial, subindo pela face medial da perna e coxa até o hiato safeno? Considerar também a rede venosa dorsal, vv. digitais dorsais, vv. metatarsais dorsais, v. dorsal do hálux, v. dorsal do 5º dedo, v. marginal medial e lateral, v. safena parva, v. safena acessória, além da posição do hiato safeno, margem falciforme e fáscia cribriforme. Critério: 0-3 incorreto; 4-6 parcial; 7-8 adequado com pequenas imprecisões; 9-10 correto e bem organizado.",
+"Confluência Profunda e Sistema Venoso Profundo: A representação demonstra corretamente o sistema venoso profundo do pé, perna e coxa, incluindo vv. digitais plantares, vv. metatarsais plantares, arco venoso plantar, v. plantar medial e lateral, vv. tibiais anterior e posterior, v. fibular, formação da v. poplítea, continuidade para v. femoral e v. femoral profunda, relação com vv. perfurantes e continuidade para a v. ilíaca externa, respeitando a profundidade em relação ao sistema superficial. Critério: 0-3 incorreto; 4-6 parcial; 7-8 adequado com pequenas imprecisões; 9-10 correto e bem organizado.",
+"Cadeias Linfáticas e Linfonodos: A representação da drenagem linfática demonstra corretamente a localização dos linfonodos poplíteos, linfonodos inguinais superficiais e profundos, continuidade para linfonodos ilíacos externos e ilíacos comuns e progressão para os troncos linfáticos lombares, respeitando a relação anatômica com os vasos venosos principais e a drenagem do membro inferior. Critério: 0-3 incorreto; 4-6 parcial; 7-8 adequado com pequenas imprecisões; 9-10 correto e bem organizado."
     ]
   },
   3: {

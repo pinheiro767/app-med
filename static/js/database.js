@@ -209,12 +209,12 @@ export const GROUP_DATABASE = {
 
 export const AUDIT_DATABASE = {
   1: {
-    area: "Topografia e Fáscias",
-    roteiro: "Roteiro 1",
-    criterios: [
-      "Limites Regionais: O papel kraft delimita corretamente o Trígono Femoral e a Fossa Poplítea?",
-      "Fixação de Retináculos: A lã que representa os Retináculos flexores e extensores está ancorada nos acidentes ósseos corretos (maleolos e calcâneo)?",
-      "Compartimentalização: Os septos intermusculares (lateral, medial e posterior) foram representados em profundidade em relação à Fáscia Lata?"
+  area: "Topografia e Fáscias",
+  roteiro: "Roteiro 1",
+  criterios: [
+    "Limites Regionais e Topografia: A representação anatômica demonstra corretamente as regiões do membro inferior, incluindo região glútea, fenda interglútea, sulco infraglúteo, região do quadril, coxa, regiões femorais anterior e posterior, trígono femoral, joelho, regiões geniculares anterior e posterior, fossa poplítea, regiões crurais anterior e posterior, regiões talocrurais anterior e posterior, regiões retromaleolares medial e lateral, região calcânea, dorso do pé, planta, margens medial e lateral, arcos longitudinal medial, longitudinal lateral e transverso, regiões tarsal, metatarsal e dedos do pé? Critério: 0-3 ausente/incorreto; 4-6 parcial; 7-8 correto com pequenas falhas; 9-10 correto e bem organizado.",
+    "Fáscias e Retináculos: A representação demonstra corretamente a fáscia lata, trato iliotibial, trato iliopatelar, fáscia crural, retináculo dos músculos flexores, retináculo superior dos extensores, retináculo inferior dos extensores, retináculo superior dos fibulares e retináculo inferior dos fibulares, respeitando posição anatômica, acidentes ósseos e orientação das estruturas? Critério: 0-3 ausente/incorreto; 4-6 incompleto; 7-8 correto com pequenas imprecisões; 9-10 correto e bem posicionado.",
+    "Compartimentalização e Organização Fascial: A representação demonstra corretamente os septos intermusculares lateral, medial e posterior da coxa, compartimentos anterior, medial e posterior da coxa, septos intermusculares anterior, posterior e transverso da perna, membrana interóssea da perna, compartimentos anterior, lateral e posterior da perna, parte superficial e profunda do compartimento posterior, fáscia dorsal do pé, fáscia plantar medial e lateral, aponeurose plantar, feixes digitais, fascículos transversos e ligamentos metatarsais transversos superficiais? Critério: 0-3 incorreto; 4-6 parcial; 7-8 adequado com pequenas falhas; 9-10 correto e completo."
     ]
   },
   2: {

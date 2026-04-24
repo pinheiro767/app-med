@@ -236,12 +236,12 @@ criterios: [
     ]
   },
   4: {
-    area: "Miologia e Casos Clínicos",
-    roteiro: "Roteiro 4",
-    criterios: [
-      "Vetor Biomecânico: O material físico está esticado entre os pontos reais de origem e inserção para os músculos da coxa, perna ou pé?",
-      "Classificação Funcional: O grupo identifica fisicamente no modelo quem são os agonistas, sinergistas e antagonistas para o movimento do caso clínico?",
-      "Representação de Lesão: Se o grupo optou por representar uma lesão, o material demonstra o ponto de ruptura ou comprometimento mecânico?"
+  "area": "Miologia e Casos Clínicos",
+  "roteiro": "Roteiro 4",
+  "criterios": [
+    "Vetor Biomecânico: O material físico representa corretamente o trajeto do músculo entre os pontos anatômicos reais de origem (estrutura mais proximal ou fixa) e inserção (estrutura mais distal ou móvel) no modelo anatômico? O vetor de força está orientado na direção correta do movimento produzido por esse músculo no exercício ou no mecanismo da lesão apresentada?",
+    "Classificação Funcional: O grupo identifica fisicamente no modelo quais músculos atuam como agonistas, sinergistas e antagonistas no movimento descrito no caso clínico, demonstrando a função de cada músculo durante as diferentes fases do movimento (por exemplo, fase de subida e descida do exercício ou fases de contração concêntrica e excêntrica)?",
+    "Representação de Lesão: Caso o grupo tenha optado por representar uma lesão muscular ou tendínea, o material demonstra claramente o ponto anatômico de ruptura ou comprometimento mecânico (muscular ou tendíneo) e sua relação com a perda ou alteração do movimento descrito no caso clínico?"
     ]
   }
 };

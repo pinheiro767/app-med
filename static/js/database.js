@@ -227,12 +227,12 @@ criterios: [
     ]
   },
   3: {
-    area: "Sistema Arterial",
-    roteiro: "Roteiro 3",
-    criterios: [
-      "Transição de Fluxo: A lã demonstra a mudança da a. femoral para a a. poplítea no hiato dos adutores?",
-      "Rede Genicular: Os fios circundam a articulação do joelho representando as aa. superiores e inferiores (lateral e medial)?",
-      "Vascularização Distal: A lã que representa a a. dorsal do pé e o arco plantar profundo está posicionada nos espaços intermetatarsais corretos?"
+area: "Sistema Arterial",
+roteiro: "Roteiro 3",
+criterios: [
+"Transição de Fluxo e Artérias Proximais: A representação demonstra corretamente a continuidade da a. ilíaca externa para a a. femoral abaixo do ligamento inguinal e sua passagem pelo hiato dos adutores formando a a. poplítea, incluindo os ramos superficiais (a. circunflexa ilíaca superficial, a. epigástrica superficial, aa. pudendas externas) e a origem da a. femoral profunda com as aa. circunflexas femorais medial e lateral?",
+"Rede Genicular e Ramos da Coxa: Os fios demonstram corretamente a participação da a. femoral profunda e da a. poplítea na irrigação da região do joelho, incluindo a. descendente do joelho, ramos da a. circunflexa femoral lateral (ramo descendente) e a rede genicular formada pelas aa. superiores e inferiores (medial e lateral) e a a. média do joelho ao redor da articulação?",
+"Vascularização Distal da Perna e do Pé: A representação demonstra corretamente a divisão da a. poplítea em a. tibial anterior e tronco tíbiofibular (originando a. tibial posterior e a. fibular) e a continuidade distal com a a. dorsal do pé, a. arqueada, aa. metatarsais dorsais, aa. digitais dorsais, além das aa. plantares medial e lateral formando o arco plantar profundo com aa. metatarsais plantares e aa. digitais plantares?"
     ]
   },
   4: {

@@ -497,8 +497,344 @@ SEMANAS.semana1.turmas.t3t4.grupos = {
   ])
 };
 
-SEMANAS.semana2.turmas.t1t2.grupos = SEMANAS.semana1.turmas.t1t2.grupos;
-SEMANAS.semana2.turmas.t3t4.grupos = SEMANAS.semana1.turmas.t3t4.grupos;
+SEMANAS.semana2 = {
+  titulo: "Semana 2 — Anatomia Topográfica de MMII",
+  descricao: "Atividade prática física com esqueleto, material de papelaria e avaliação estruturada dos membros inferiores.",
+  turmas: {
+    t1t2: {
+      titulo: "Turmas T1/T2 — Terça-feira",
+      grupos: {
+        1: {
+          titulo: "Grupo 1 — Regiões e Estruturas Fasciais dos MMII",
+          alunos: SEMANAS.semana1.turmas.t1t2.grupos[1].alunos,
+          conteudo: [
+            {
+              titulo: "I. Regiões",
+              itens: [
+                "Região glútea",
+                "Fenda interglútea",
+                "Sulco infraglúteo",
+                "Região do quadril",
+                "Região da coxa",
+                "Região femoral anterior",
+                "Trígono femoral",
+                "Região femoral posterior",
+                "Região do joelho",
+                "Região genicular anterior",
+                "Região genicular posterior",
+                "Fossa poplítea",
+                "Região crural anterior",
+                "Região crural posterior",
+                "Região talocrural anterior",
+                "Região talocrural posterior",
+                "Região retromaleolar lateral",
+                "Região retromaleolar medial",
+                "Regiões do pé",
+                "Região calcânea",
+                "Dorso do pé",
+                "Planta",
+                "Margem lateral do pé",
+                "Margem medial do pé",
+                "Arco longitudinal do pé – parte lateral",
+                "Arco longitudinal do pé – parte medial",
+                "Arco transverso do pé",
+                "Região tarsal",
+                "Região metatarsal",
+                "Dedos do pé"
+              ]
+            },
+            {
+              titulo: "II. Estruturas Fasciais",
+              itens: [
+                "Fáscia lata",
+                "Trato iliotibial",
+                "Trato iliopatelar",
+                "Septo intermuscular lateral da coxa",
+                "Septo intermuscular medial da coxa",
+                "Septo intermuscular posterior da coxa",
+                "Compartimento anterior da coxa",
+                "Compartimento posterior da coxa",
+                "Compartimento medial da coxa",
+                "Fáscia da perna / crural",
+                "Retináculo dos músculos flexores",
+                "Retináculo superior dos músculos extensores",
+                "Retináculo inferior dos músculos extensores",
+                "Retináculo superior dos músculos fibulares",
+                "Retináculo inferior dos músculos fibulares",
+                "Septo intermuscular anterior da perna",
+                "Septo intermuscular posterior da perna",
+                "Septo intermuscular transverso da perna",
+                "Membrana interóssea da perna",
+                "Compartimento anterior da perna",
+                "Compartimento posterior da perna",
+                "Parte superficial",
+                "Parte profunda",
+                "Compartimento lateral da perna",
+                "Fáscia dorsal do pé",
+                "Fáscia plantar lateral",
+                "Fáscia plantar medial",
+                "Aponeurose plantar",
+                "Feixes digitais da aponeurose plantar",
+                "Fascículos transversos da aponeurose plantar",
+                "Ligamentos metatarsais transversos superficiais"
+              ]
+            }
+          ],
+          observar: [
+            "Se as regiões do membro inferior foram delimitadas corretamente no esqueleto.",
+            "Se trígono femoral, fossa poplítea, regiões retromaleolares e arcos do pé foram bem posicionados.",
+            "Se fáscia lata, trato iliotibial, septos e compartimentos foram representados em profundidade.",
+            "Se os retináculos do tornozelo e a aponeurose plantar foram posicionados corretamente."
+          ],
+          perguntas: [
+            {
+              nivel: "Básica",
+              pergunta: "Quais são as principais regiões anatômicas do membro inferior?",
+              respostaEsperada: "Região glútea, quadril, coxa, joelho, perna, tornozelo, pé, planta, dorso do pé e dedos."
+            },
+            {
+              nivel: "Intermediária",
+              pergunta: "Qual é a função dos septos intermusculares da coxa e da perna?",
+              respostaEsperada: "Separar compartimentos musculares e organizar músculos, vasos e nervos."
+            },
+            {
+              nivel: "Clínica",
+              pergunta: "Por que a fáscia lata e o trato iliotibial são importantes funcionalmente?",
+              respostaEsperada: "Ajudam na estabilização lateral da coxa e do joelho e organizam a musculatura."
+            }
+          ]
+        },
+
+        2: {
+          titulo: "Grupo 2 — Drenagem Venosa e Linfonodos dos MMII",
+          alunos: SEMANAS.semana1.turmas.t1t2.grupos[2].alunos,
+          conteudo: [
+            {
+              titulo: "I. Drenagem Venosa Superficial",
+              itens: [
+                "vv. digitais dorsais",
+                "vv. metatarsais dorsais",
+                "Arco venoso dorsal do pé",
+                "Rede venosa dorsal",
+                "v. dorsal do hálux",
+                "v. safena magna",
+                "v. cutânea lateral da coxa",
+                "v. cutânea anterior da coxa",
+                "Hiato safeno",
+                "Margem falciforme",
+                "Fáscia cribriforme",
+                "v. dorsal do 5º dedo",
+                "v. marginal lateral",
+                "v. marginal medial",
+                "v. safena parva",
+                "v. safena acessória"
+              ]
+            },
+            {
+              titulo: "II. Drenagem Venosa Profunda",
+              itens: [
+                "vv. digitais plantares",
+                "vv. metatarsais plantares",
+                "Arco venoso plantar",
+                "v. plantar lateral do pé",
+                "v. plantar medial do pé",
+                "v. tibial posterior",
+                "v. fibular",
+                "v. tibial anterior",
+                "v. poplítea",
+                "v. femoral",
+                "v. femoral profunda",
+                "vv. perfurantes",
+                "v. glútea superior",
+                "v. glútea inferior",
+                "v. ilíaca externa"
+              ]
+            },
+            {
+              titulo: "III. Linfonodos",
+              itens: [
+                "Linfonodos poplíteos",
+                "Linfonodos inguinais superficiais",
+                "Linfonodos inguinais profundos",
+                "Linfonodos ilíacos externos",
+                "Linfonodos ilíacos comuns",
+                "Troncos linfáticos lombares"
+              ]
+            }
+          ],
+          observar: [
+            "Se o grupo diferencia sistema venoso superficial e profundo.",
+            "Se a safena magna passa anteriormente ao maléolo medial e segue até o hiato safeno.",
+            "Se a safena parva segue corretamente pela região posterior da perna.",
+            "Se linfonodos poplíteos, inguinais superficiais e profundos estão bem posicionados."
+          ],
+          perguntas: [
+            {
+              nivel: "Básica",
+              pergunta: "Qual é o trajeto geral da veia safena magna?",
+              respostaEsperada: "Origina-se medialmente no arco venoso dorsal, passa anteriormente ao maléolo medial e sobe pela face medial da perna e coxa até o hiato safeno."
+            },
+            {
+              nivel: "Intermediária",
+              pergunta: "Qual é a diferença entre drenagem venosa superficial e profunda?",
+              respostaEsperada: "A superficial ocorre acima da fáscia profunda; a profunda acompanha artérias e fica em planos mais profundos."
+            },
+            {
+              nivel: "Clínica",
+              pergunta: "Por que os linfonodos inguinais são importantes clinicamente?",
+              respostaEsperada: "Recebem drenagem linfática de grande parte do membro inferior e podem aumentar em infecções ou processos inflamatórios."
+            }
+          ]
+        },
+
+        3: {
+          titulo: "Grupo 3 — Sistema Arterial dos MMII",
+          alunos: SEMANAS.semana1.turmas.t1t2.grupos[3].alunos,
+          conteudo: [
+            {
+              titulo: "Lista arterial",
+              itens: [
+                "a. ilíaca externa",
+                "a. femoral",
+                "a. circunflexa ilíaca superficial",
+                "a. epigástrica superficial",
+                "a. pudenda externa superficial",
+                "a. pudenda externa profunda",
+                "a. femoral profunda",
+                "a. circunflexa femoral medial",
+                "a. circunflexa femoral lateral",
+                "Ramo descendente da a. circunflexa femoral lateral",
+                "a. descendente do joelho",
+                "a. obturatória",
+                "a. glútea superior",
+                "a. glútea inferior",
+                "a. poplítea",
+                "a. tibial anterior",
+                "Tronco tíbiofibular",
+                "a. tibial posterior",
+                "a. fibular",
+                "a. superior lateral do joelho",
+                "a. superior medial do joelho",
+                "a. inferior lateral do joelho",
+                "a. inferior medial do joelho",
+                "a. média do joelho",
+                "Recorrente tibial anterior",
+                "a. tarsal lateral",
+                "a. dorsal do pé",
+                "a. arqueada",
+                "a. plantar profunda",
+                "1ª a. metatarsal dorsal",
+                "aa. metatarsais dorsais",
+                "aa. digitais dorsais comuns",
+                "aa. digitais dorsais próprias",
+                "a. plantar medial",
+                "a. plantar lateral",
+                "Arco plantar profundo",
+                "aa. metatarsais plantares",
+                "aa. digitais plantares comuns",
+                "aa. digitais plantares próprias"
+              ]
+            }
+          ],
+          observar: [
+            "Se a continuidade da artéria ilíaca externa para femoral foi representada corretamente.",
+            "Se a artéria femoral foi ligada à artéria poplítea no hiato dos adutores.",
+            "Se a rede genicular foi representada ao redor do joelho.",
+            "Se as artérias tibial anterior, tibial posterior e fibular foram posicionadas corretamente.",
+            "Se a vascularização dorsal e plantar do pé foi organizada com coerência anatômica."
+          ],
+          perguntas: [
+            {
+              nivel: "Básica",
+              pergunta: "Qual artéria continua como artéria femoral no membro inferior?",
+              respostaEsperada: "A artéria ilíaca externa continua como artéria femoral após passar sob o ligamento inguinal."
+            },
+            {
+              nivel: "Intermediária",
+              pergunta: "Onde a artéria femoral passa a ser chamada de artéria poplítea?",
+              respostaEsperada: "Após atravessar o hiato dos adutores."
+            },
+            {
+              nivel: "Clínica",
+              pergunta: "Qual é a importância da rede genicular do joelho?",
+              respostaEsperada: "Ela contribui para a circulação colateral ao redor da articulação do joelho."
+            }
+          ]
+        },
+
+        4: {
+          titulo: "Grupo 4 — Miologia e Casos Clínicos dos MMII",
+          alunos: SEMANAS.semana1.turmas.t1t2.grupos[4].alunos,
+          conteudo: [
+            {
+              titulo: "1. Caso clínico aplicado aos músculos da coxa",
+              itens: [
+                "Incluir imagem de exercício ou lesão.",
+                "Listar músculos trabalhados.",
+                "Descrever origem, inserção, tipo de contração e fases do movimento.",
+                "Identificar agonistas, sinergistas e antagonistas."
+              ]
+            },
+            {
+              titulo: "2. Caso clínico aplicado aos músculos da perna",
+              itens: [
+                "Incluir imagem de exercício ou lesão.",
+                "Listar músculos trabalhados.",
+                "Descrever origem, inserção, tipo de contração e fases do movimento.",
+                "Identificar agonistas, sinergistas e antagonistas."
+              ]
+            },
+            {
+              titulo: "3. Caso clínico aplicado aos músculos do pé",
+              itens: [
+                "Incluir imagem de exercício ou lesão.",
+                "Listar músculos trabalhados.",
+                "Descrever origem, inserção, tipo de contração e fases do movimento.",
+                "Identificar agonistas, sinergistas e antagonistas."
+              ]
+            }
+          ],
+          observar: [
+            "Se o caso clínico foi aplicado corretamente aos músculos da coxa, perna ou pé.",
+            "Se o grupo identificou origem, inserção, ação e tipo de contração.",
+            "Se classificou agonistas, sinergistas e antagonistas.",
+            "Se o modelo físico mostra vetor biomecânico coerente.",
+            "Se a lesão, quando escolhida, foi relacionada ao déficit funcional."
+          ],
+          perguntas: [
+            {
+              nivel: "Básica",
+              pergunta: "O que é um músculo agonista?",
+              respostaEsperada: "É o principal músculo responsável por determinado movimento."
+            },
+            {
+              nivel: "Intermediária",
+              pergunta: "Qual é a diferença entre contração concêntrica e excêntrica?",
+              respostaEsperada: "Na concêntrica o músculo encurta; na excêntrica ele alonga controlando o movimento."
+            },
+            {
+              nivel: "Clínica",
+              pergunta: "Como uma lesão muscular pode alterar a marcha ou o apoio do membro inferior?",
+              respostaEsperada: "Pode gerar dor, fraqueza, compensações posturais, limitação funcional e alteração do padrão de movimento."
+            }
+          ]
+        }
+      }
+    },
+
+    t3t4: {
+      titulo: "Turmas T3/T4 — Quarta-feira",
+      grupos: {}
+    }
+  }
+};
+
+SEMANAS.semana2.turmas.t3t4.grupos = {
+  1: clonarGrupo(SEMANAS.semana2.turmas.t1t2.grupos[1], SEMANAS.semana1.turmas.t3t4.grupos[1].alunos),
+  2: clonarGrupo(SEMANAS.semana2.turmas.t1t2.grupos[2], SEMANAS.semana1.turmas.t3t4.grupos[2].alunos),
+  3: clonarGrupo(SEMANAS.semana2.turmas.t1t2.grupos[3], SEMANAS.semana1.turmas.t3t4.grupos[3].alunos),
+  4: clonarGrupo(SEMANAS.semana2.turmas.t1t2.grupos[4], SEMANAS.semana1.turmas.t3t4.grupos[4].alunos)
+};
 
 export const CRITERIOS_GERAIS = [
   "Correção anatômica das estruturas representadas",

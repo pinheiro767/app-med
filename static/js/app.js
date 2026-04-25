@@ -351,14 +351,6 @@ window.salvarNota = function(chave, valor) {
   state[chave] = valor;
   salvar();
   updateAnalytics();
-
-  if (grupoAbertoAtual) {
-    abrirGrupo(
-      grupoAbertoAtual.semanaId,
-      grupoAbertoAtual.turmaId,
-      grupoAbertoAtual.grupoId
-    );
-  }
 };
 
 window.salvarObservacao = function(semanaId, turmaId, grupoId) {

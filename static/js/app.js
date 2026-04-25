@@ -645,15 +645,38 @@ window.exportarAvaliacaoJSON = function() {
 window.importarAvaliacaoJSON = function(event) {
   const file = event.target.files[0];
 
-  if (!file) return;
+  if (!file) {
+    alert("Nenhum arquivo selecionado.");
+    return;
+  }
 
   const reader = new FileReader();
 
   reader.onload = function(e) {
     try {
-      const arquivo = JSON.parse(e.target.result);
+      const texto = e.target.result;
 
-      const dadosImportados = arquivo.dados || arquivo;
+      if (!texto || texto.trim() === "") {
+        alert("O arquivo está vazio.");
+        return;
+      }
+
+      const arquivo = JSON.parse(texto);
+
+      let dadosImportados = null;
+
+      if (arquivo.dados) {
+        dadosImportados = arquivo.dados;
+      } else if (arquivo.state) {
+        dadosImportados = arquivo.state;
+      } else {
+        dadosImportados = arquivo;
+      }
+
+      if (typeof dadosImportados !== "object" || dadosImportados === null) {
+        alert("O arquivo não contém dados válidos de avaliação.");
+        return;
+      }
 
       state = {
         ...state,
@@ -664,12 +687,16 @@ window.importarAvaliacaoJSON = function(event) {
       updateAnalytics();
 
       alert("Avaliação importada com sucesso. As notas foram combinadas.");
+
+      event.target.value = "";
+
     } catch (error) {
-      alert("Erro ao importar. Verifique se o arquivo é um JSON válido exportado pelo app.");
+      console.error("Erro ao importar JSON:", error);
+      alert("Erro ao importar. O arquivo precisa ser .json exportado pelo próprio app.");
     }
   };
 
-  reader.readAsText(file);
+  reader.readAsText(file, "UTF-8");
 };
 
 import { correlacaoPearson } from "./correlacao.js";

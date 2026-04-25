@@ -239,14 +239,13 @@ function renderMidiasGrupo(semanaId, turmaId, grupoId) {
       <label class="file-label">
         Tirar foto / anexar fotos
         <input 
-          type="file" 
-          accept="image/*" 
-          capture="environment" 
-          multiple
-          onchange="salvarFotosGrupo('${semanaId}', '${turmaId}', '${grupoId}', this.files)"
+         type="file" 
+         accept="image/*" 
+         capture="environment" 
+         multiple
+         onchange="salvarFotosGrupo('${semanaId}', '${turmaId}', '${grupoId}', this.files)"
         >
       </label>
-
       <div class="gallery">
         ${uploads.fotos.map((foto, index) => `
           <figure>

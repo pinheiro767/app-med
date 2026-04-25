@@ -3,92 +3,106 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Auditoria Anatomia MMII</title>
 
+  <title>Avaliação de Anatomia</title>
+
+  <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+  <meta name="theme-color" content="#0f172a">
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
+
 <body>
 
   <header class="hero">
-    <div class="hero-content">
+    <div>
       <p class="eyebrow">Universidade Estadual de Maringá · DCM</p>
-      <h1>Auditoria Anatomia MMII</h1>
-      <p class="hero-subtitle">
-        Plataforma para roteiros dos grupos, avaliação prática, checklist, fotos, gráfico e tabela dinâmica.
+      <h1>Avaliação de Anatomia</h1>
+      <p>
+        PWA para avaliação de atividades práticas, registro fotográfico,
+        cálculo de notas, estatística e gráficos.
       </p>
+
+      <button id="installAppBtn" style="display:none;">
+        Baixar app
+      </button>
     </div>
   </header>
 
-  <main class="container">
+  <main id="app-root" class="container">
 
     <section class="panel">
-      <div class="section-top">
-        <div>
-          <p class="section-kicker">Seção 1</p>
-          <h2>Roteiros dos grupos</h2>
-          <p class="small">Conteúdo integral carregado a partir do banco de dados.</p>
-        </div>
-      </div>
-      <div id="cards" class="cards-grid"></div>
+      <h2>Semanas e grupos</h2>
+      <p>Selecione a semana, turma e grupo para visualizar conteúdo e avaliação.</p>
+      <div id="weekCards" class="cards-grid"></div>
     </section>
 
     <section class="panel">
-      <div class="section-top">
-        <div>
-          <p class="section-kicker">Seção 2</p>
-          <h2>Auditoria e avaliação</h2>
-          <p class="small">Critérios por grupo, parecer técnico, fotos, arquivos e integrantes.</p>
-        </div>
-      </div>
-      <div id="audit"></div>
+      <h2>Avaliação</h2>
+      <p>
+        As professoras avaliam os mesmos critérios. O sistema calcula a média
+        entre as duas notas.
+      </p>
+      <div id="evaluationArea"></div>
     </section>
 
     <section class="panel">
-      <div class="section-top">
-        <div>
-          <p class="section-kicker">Seção 3</p>
-          <h2>Gráfico</h2>
-          <p class="small">Média automática por grupo.</p>
-        </div>
-      </div>
-      <div class="chart-wrap">
-        <canvas id="chart"></canvas>
-      </div>
-    </section>
+      <h2>Estatística e gráficos</h2>
 
-    <section class="panel">
-      <div class="section-top">
-        <div>
-          <p class="section-kicker">Seção 4</p>
-          <h2>Tabela geral</h2>
-        </div>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Grupo</th>
-              <th>Integrante</th>
-              <th>Nota</th>
-              <th>Observação</th>
-            </tr>
-          </thead>
-          <tbody id="grade-body"></tbody>
-        </table>
-      </div>
-
-      <div class="actions">
-        <button type="button" onclick="exportExcel()">Exportar Excel</button>
+      <div class="button-group">
+        <button type="button" onclick="updateAnalytics()">Atualizar cálculos</button>
+        <button type="button" onclick="exportCSV()">Exportar CSV</button>
         <button type="button" onclick="gerarPDF()">Gerar PDF</button>
       </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span>Média geral</span>
+          <strong id="mediaGeral">0.00</strong>
+        </div>
+
+        <div class="stat-card">
+          <span>Mediana</span>
+          <strong id="medianaGeral">0.00</strong>
+        </div>
+
+        <div class="stat-card">
+          <span>Desvio padrão</span>
+          <strong id="desvioPadrao">0.00</strong>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="chartGrupos"></canvas>
+      </div>
+
+      <details class="accordion">
+        <summary>Resultados detalhados</summary>
+
+        <div class="button-group">
+          <button type="button" onclick="mostrarResumoGrupos()">Resumo por grupo</button>
+          <button type="button" onclick="mostrarDetalhesAlunos()">Detalhes por aluno</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead id="resultsHead"></thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+      </details>
+
     </section>
 
   </main>
 
   <script type="module" src="/static/js/app.js"></script>
+
 </body>
 </html>

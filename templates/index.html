@@ -53,22 +53,57 @@
     </section>
 
     <section class="panel">
+      <details class="accordion">
+        <summary>Registro fotográfico da aula</summary>
+
+        <p>
+          Use esta área para tirar fotos ou anexar imagens dos modelos físicos.
+          As imagens ficam salvas no próprio aparelho pelo navegador.
+        </p>
+
+        <div class="button-group">
+          <label class="import-label">
+            Tirar foto / anexar imagens
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              multiple
+              onchange="uploadFotoIndexedDB(event, 'registro-geral')"
+            >
+          </label>
+
+          <button type="button" onclick="listarFotosIndexedDB('registro-geral')">
+            Mostrar fotos salvas
+          </button>
+
+          <button type="button" onclick="limparFotosIndexedDB('registro-geral')">
+            Limpar fotos deste registro
+          </button>
+        </div>
+
+        <div id="fotosIndexedDB" class="gallery"></div>
+      </details>
+    </section>
+
+    <section class="panel">
       <h2>Estatística e gráficos</h2>
 
       <div class="button-group">
-  <button type="button" onclick="updateAnalytics()">Atualizar cálculos</button>
-  <button type="button" onclick="exportCSV()">Exportar CSV</button>
-  <button type="button" onclick="gerarPDF()">Gerar PDF</button>
+        <button type="button" onclick="updateAnalytics()">Atualizar cálculos</button>
+        <button type="button" onclick="exportCSV()">Exportar CSV</button>
+        <button type="button" onclick="gerarPDF()">Gerar PDF</button>
 
-  <button type="button" onclick="exportarAvaliacaoJSON()">
-    Exportar avaliação
-  </button>
+        <button type="button" onclick="exportarAvaliacaoJSON()">
+          Exportar avaliação
+        </button>
 
-  <label class="import-label">
-    Importar avaliação
-    <input type="file" accept=".json" onchange="importarAvaliacaoJSON(event)">
-  </label>
-</div>
+        <label class="import-label">
+          Importar avaliação
+          <input type="file" accept=".json" onchange="importarAvaliacaoJSON(event)">
+        </label>
+      </div>
+
       <div class="stats-grid">
         <div class="stat-card">
           <span>Média geral</span>

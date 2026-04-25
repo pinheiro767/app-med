@@ -673,6 +673,26 @@ window.importarAvaliacaoJSON = function(event) {
   reader.readAsText(file);
 };
 
+import { correlacaoPearson } from "./correlacao.js";
+
+function calcularConcordancia(){
+
+  const notasCarmem=[];
+  const notasClaudia=[];
+
+  state.avaliacoes.forEach(a=>{
+
+    notasCarmem.push(a.carmem);
+    notasClaudia.push(a.claudia);
+
+  });
+
+  const r=correlacaoPearson(notasCarmem,notasClaudia);
+
+  document.getElementById("correlacao").innerText=r.toFixed(2);
+
+}
+
 renderSemanas();
 updateAnalytics();
 registrarPWA();

@@ -56,11 +56,19 @@
       <h2>Estatística e gráficos</h2>
 
       <div class="button-group">
-        <button type="button" onclick="updateAnalytics()">Atualizar cálculos</button>
-        <button type="button" onclick="exportCSV()">Exportar CSV</button>
-        <button type="button" onclick="gerarPDF()">Gerar PDF</button>
-      </div>
+  <button type="button" onclick="updateAnalytics()">Atualizar cálculos</button>
+  <button type="button" onclick="exportCSV()">Exportar CSV</button>
+  <button type="button" onclick="gerarPDF()">Gerar PDF</button>
 
+  <button type="button" onclick="exportarAvaliacaoJSON()">
+    Exportar avaliação
+  </button>
+
+  <label class="import-label">
+    Importar avaliação
+    <input type="file" accept=".json" onchange="importarAvaliacaoJSON(event)">
+  </label>
+</div>
       <div class="stats-grid">
         <div class="stat-card">
           <span>Média geral</span>

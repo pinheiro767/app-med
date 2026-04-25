@@ -1,10 +1,12 @@
 import { SEMANAS, CRITERIOS_GERAIS } from "./database.js";
+import { correlacaoPearson } from "./correlacao.js";
 
 const STORAGE_KEY = "avaliacao_anatomia_pwa_v3";
 
 let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 let chart = null;
 let zoomAtual = 1;
+let grupoAbertoAtual = null;
 
 function salvar() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -98,6 +100,8 @@ function renderSemanas() {
 }
 
 window.abrirGrupo = function(semanaId, turmaId, grupoId) {
+  grupoAbertoAtual = { semanaId, turmaId, grupoId };
+
   const grupo = SEMANAS[semanaId].turmas[turmaId].grupos[grupoId];
   const area = document.getElementById("evaluationArea");
 
@@ -347,6 +351,14 @@ window.salvarNota = function(chave, valor) {
   state[chave] = valor;
   salvar();
   updateAnalytics();
+
+  if (grupoAbertoAtual) {
+    abrirGrupo(
+      grupoAbertoAtual.semanaId,
+      grupoAbertoAtual.turmaId,
+      grupoAbertoAtual.grupoId
+    );
+  }
 };
 
 window.salvarObservacao = function(semanaId, turmaId, grupoId) {
@@ -662,16 +674,7 @@ window.importarAvaliacaoJSON = function(event) {
       }
 
       const arquivo = JSON.parse(texto);
-
-      let dadosImportados = null;
-
-      if (arquivo.dados) {
-        dadosImportados = arquivo.dados;
-      } else if (arquivo.state) {
-        dadosImportados = arquivo.state;
-      } else {
-        dadosImportados = arquivo;
-      }
+      const dadosImportados = arquivo.dados || arquivo.state || arquivo;
 
       if (typeof dadosImportados !== "object" || dadosImportados === null) {
         alert("O arquivo não contém dados válidos de avaliação.");
@@ -686,7 +689,15 @@ window.importarAvaliacaoJSON = function(event) {
       salvar();
       updateAnalytics();
 
-      alert("Avaliação importada com sucesso. As notas foram combinadas.");
+      if (grupoAbertoAtual) {
+        abrirGrupo(
+          grupoAbertoAtual.semanaId,
+          grupoAbertoAtual.turmaId,
+          grupoAbertoAtual.grupoId
+        );
+      }
+
+      alert("Avaliação importada com sucesso. Os campos foram preenchidos automaticamente.");
 
       event.target.value = "";
 
@@ -698,8 +709,6 @@ window.importarAvaliacaoJSON = function(event) {
 
   reader.readAsText(file, "UTF-8");
 };
-
-import { correlacaoPearson } from "./correlacao.js";
 
 function calcularConcordancia(){
 

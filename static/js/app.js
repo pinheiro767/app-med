@@ -619,6 +619,60 @@ function configurarInstalacao() {
   });
 }
 
+window.exportarAvaliacaoJSON = function() {
+  const dadosExportados = {
+    app: "avaliacao_anatomia_pwa",
+    versao: "1.0",
+    dataExportacao: new Date().toISOString(),
+    dados: state
+  };
+
+  const blob = new Blob(
+    [JSON.stringify(dadosExportados, null, 2)],
+    { type: "application/json" }
+  );
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+
+  const data = new Date().toISOString().slice(0, 10);
+  link.download = `avaliacao_anatomia_${data}.json`;
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+window.importarAvaliacaoJSON = function(event) {
+  const file = event.target.files[0];
+
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    try {
+      const arquivo = JSON.parse(e.target.result);
+
+      const dadosImportados = arquivo.dados || arquivo;
+
+      state = {
+        ...state,
+        ...dadosImportados
+      };
+
+      salvar();
+      updateAnalytics();
+
+      alert("Avaliação importada com sucesso. As notas foram combinadas.");
+    } catch (error) {
+      alert("Erro ao importar. Verifique se o arquivo é um JSON válido exportado pelo app.");
+    }
+  };
+
+  reader.readAsText(file);
+};
+
 renderSemanas();
 updateAnalytics();
 registrarPWA();

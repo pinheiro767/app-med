@@ -1,4 +1,4 @@
-const CACHE_NAME = "avaliacao-anatomia-v19";
+const CACHE_NAME = "avaliacao-anatomia-v21";
 
 const URLS_TO_CACHE = [
   "/",

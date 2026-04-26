@@ -1,3 +1,4 @@
+import { correlacaoPearson } from "./correlacao.js";
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 import { SEMANAS, CRITERIOS_GERAIS } from "./database.js";
 import { correlacaoPearson } from "./correlacao.js";
@@ -447,6 +448,25 @@ window.updateAnalytics = function() {
   document.getElementById("mediaGeral").textContent = media(medias).toFixed(2);
   document.getElementById("medianaGeral").textContent = mediana(medias).toFixed(2);
   document.getElementById("desvioPadrao").textContent = desvioPadrao(medias).toFixed(2);
+
+  const notasClaudia = [];
+  const notasCarmen = [];
+
+  linhas.forEach(l => {
+    if (l.claudia > 0 && l.carmem > 0) {
+      notasClaudia.push(l.claudia);
+      notasCarmen.push(l.carmem);
+    }
+  });
+
+  const r = notasClaudia.length > 1
+    ? correlacaoPearson(notasClaudia, notasCarmen)
+    : 0;
+
+  const campoCorrelacao = document.getElementById("correlacao");
+  if (campoCorrelacao) {
+    campoCorrelacao.textContent = r.toFixed(2);
+  }
 
   renderTabelaResultados(linhas);
   renderGrafico(linhas);

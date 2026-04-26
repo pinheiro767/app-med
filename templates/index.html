@@ -86,28 +86,35 @@ As imagens ficam salvas no próprio aparelho pelo navegador.
 </p>
 
 <div class="button-group">
+<div class="button-group">
 
-<label class="import-label">
+  <label class="import-label">
+    Tirar foto
+    <input
+      type="file"
+      accept="image/*"
+      capture="environment"
+      onchange="uploadFotoIndexedDB(event, 'registro-geral')"
+    >
+  </label>
 
-Tirar foto / anexar imagens
+  <label class="import-label">
+    Anexar imagens
+    <input
+      type="file"
+      accept="image/*"
+      multiple
+      onchange="uploadFotoIndexedDB(event, 'registro-geral')"
+    >
+  </label>
 
-<input
-type="file"
-accept="image/*"
-capture="environment"
-multiple
-onchange="uploadFotoIndexedDB(event, 'registro-geral')"
->
+  <button type="button" onclick="listarFotosIndexedDB('registro-geral')">
+    Mostrar fotos salvas
+  </button>
 
-</label>
-
-<button type="button" onclick="listarFotosIndexedDB('registro-geral')">
-Mostrar fotos salvas
-</button>
-
-<button type="button" onclick="limparFotosIndexedDB('registro-geral')">
-Limpar fotos deste registro
-</button>
+  <button type="button" onclick="limparFotosIndexedDB('registro-geral')">
+    Limpar fotos deste registro
+  </button>
 
 </div>
 

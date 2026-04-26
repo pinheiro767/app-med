@@ -22,12 +22,30 @@ function key(semana, turma, grupo, criterio, avaliadora) {
   return `${semana}_${turma}_G${grupo}_C${criterio}_${avaliadora}`;
 }
 
+function interpretarChave(chave) {
+  const partes = chave.split("_");
+
+  const semana = partes[0];
+  const turma = partes[1];
+  const grupo = partes[2];
+  const criterioIndex = Number(partes[3].replace("C", ""));
+  const avaliadora = partes[4];
+
+  return {
+    semana,
+    turma,
+    grupo,
+    criterio: CRITERIOS_GERAIS[criterioIndex],
+    avaliadora
+  };
+}
+
 function uploadKey(semanaId, turmaId, grupoId) {
   return `uploads_${semanaId}_${turmaId}_${grupoId}`;
 }
 
 function getUploads(semanaId, turmaId, grupoId) {
-  return state[uploadKey(semanaId, turmaId, grupoId)] || [];
+  return state[uploadKey(semanaId, turmaId, grupoId)] || { fotos: [], arquivos: [] };
 }
 
 function setUploads(semanaId, turmaId, grupoId, dados) {

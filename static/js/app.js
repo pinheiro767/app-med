@@ -89,6 +89,103 @@ function escapeHtml(texto) {
     .replaceAll("'", "&#039;");
 }
 
+const FOTO_DB = "avaliacao_anatomia_fotos";
+const FOTO_STORE = "fotos";
+
+function abrirBancoFotos() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(FOTO_DB, 1);
+
+    request.onupgradeneeded = function(event) {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(FOTO_STORE)) {
+        db.createObjectStore(FOTO_STORE, { keyPath: "id", autoIncrement: true });
+      }
+    };
+
+    request.onsuccess = function(event) {
+      resolve(event.target.result);
+    };
+
+    request.onerror = function() {
+      reject(request.error);
+    };
+  });
+}
+
+window.uploadFotoIndexedDB = async function(event, grupo) {
+  const files = Array.from(event.target.files || []);
+  if (!files.length) return;
+
+  const db = await abrirBancoFotos();
+  const tx = db.transaction(FOTO_STORE, "readwrite");
+  const store = tx.objectStore(FOTO_STORE);
+
+  files.forEach(file => {
+    if (!file.type.startsWith("image/")) return;
+
+    store.add({
+      grupo,
+      nome: file.name,
+      tipo: file.type,
+      data: new Date().toISOString(),
+      arquivo: file
+    });
+  });
+
+  tx.oncomplete = () => {
+    alert("Foto(s) salva(s) no aparelho.");
+    listarFotosIndexedDB(grupo);
+  };
+};
+
+window.listarFotosIndexedDB = async function(grupo) {
+  const db = await abrirBancoFotos();
+  const tx = db.transaction(FOTO_STORE, "readonly");
+  const store = tx.objectStore(FOTO_STORE);
+
+  const request = store.getAll();
+
+  request.onsuccess = function() {
+    const galeria = document.getElementById("fotosIndexedDB");
+    if (!galeria) return;
+
+    galeria.innerHTML = "";
+
+    request.result
+      .filter(foto => foto.grupo === grupo)
+      .forEach(foto => {
+        const url = URL.createObjectURL(foto.arquivo);
+
+        const figure = document.createElement("figure");
+        figure.innerHTML = `
+          <img src="${url}" alt="${foto.nome}">
+          <figcaption>${foto.nome}</figcaption>
+        `;
+
+        galeria.appendChild(figure);
+      });
+  };
+};
+
+window.limparFotosIndexedDB = async function(grupo) {
+  const db = await abrirBancoFotos();
+  const tx = db.transaction(FOTO_STORE, "readwrite");
+  const store = tx.objectStore(FOTO_STORE);
+
+  const request = store.getAll();
+
+  request.onsuccess = function() {
+    request.result.forEach(foto => {
+      if (foto.grupo === grupo) {
+        store.delete(foto.id);
+      }
+    });
+
+    alert("Fotos removidas deste registro.");
+    listarFotosIndexedDB(grupo);
+  };
+};
 function renderSemanas() {
   const container = document.getElementById("weekCards");
   container.innerHTML = "";

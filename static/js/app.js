@@ -1,5 +1,11 @@
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 import { SEMANAS, CRITERIOS_GERAIS } from "./database.js";
 import { correlacaoPearson } from "./correlacao.js";
+
+const supabaseUrl = "https://sygawhmxmuhbeinapqlj.supabase.co";
+const supabaseKey = "sb_publishable_WBtluEOS7AlQqAylTlOnuQ_v-2W2KHJ";
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const STORAGE_KEY = "avaliacao_anatomia_pwa_v3";
 
@@ -21,7 +27,7 @@ function uploadKey(semanaId, turmaId, grupoId) {
 }
 
 function getUploads(semanaId, turmaId, grupoId) {
-  return state[uploadKey(semanaId, turmaId, grupoId)] || { fotos: [], arquivos: [] };
+  return state[uploadKey(semanaId, turmaId, grupoId)] || [];
 }
 
 function setUploads(semanaId, turmaId, grupoId, dados) {

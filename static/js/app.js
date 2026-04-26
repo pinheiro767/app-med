@@ -609,5 +609,38 @@ function renderGaleriaGrupo4(imagens) {
     </details>
   `;
 }
+let deferredPrompt = null;
+
+window.addEventListener("beforeinstallprompt", event => {
+  event.preventDefault();
+  deferredPrompt = event;
+
+  const btn = document.getElementById("installAppBtn");
+  if (btn) btn.style.display = "inline-flex";
+});
+
+function configurarInstalacao() {
+  const btn = document.getElementById("installAppBtn");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
+    if (!deferredPrompt) {
+      alert("O navegador ainda não liberou a instalação. Tente abrir pelo Chrome e recarregar a página.");
+      return;
+    }
+
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+
+    deferredPrompt = null;
+    btn.style.display = "none";
+  });
+}
+
+function registrarPWA() {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js").catch(console.error);
+  }
+}
 renderSemanas();
 updateAnalytics();

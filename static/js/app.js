@@ -645,6 +645,27 @@ window.exportarAvaliacaoJSON = function() {
   link.click();
   document.body.removeChild(link);
 };
+function resumirDadosImportados(dadosImportados) {
+  const grupos = new Set();
+
+  Object.keys(dadosImportados).forEach(chave => {
+    const partes = chave.split("_");
+
+    if (partes.length >= 4 && chave.includes("_G")) {
+      const semana = partes[0];
+      const turma = partes[1];
+      const grupo = partes[2];
+
+      grupos.add(`${semana} · ${turma} · ${grupo}`);
+    }
+  });
+
+  if (!grupos.size) {
+    return "Nenhum grupo identificado no arquivo.";
+  }
+
+  return Array.from(grupos).join("\n");
+}
 
 window.importarAvaliacaoJSON = function(event) {
   const file = event.target.files[0];
@@ -689,7 +710,11 @@ window.importarAvaliacaoJSON = function(event) {
         );
       }
 
-      alert("Avaliação importada com sucesso. Os campos foram preenchidos automaticamente.");
+      const resumo = resumirDadosImportados(dadosImportados);
+
+alert(
+  "Avaliação importada com sucesso.\n\nDados encontrados:\n" + resumo
+);
 
       event.target.value = "";
 

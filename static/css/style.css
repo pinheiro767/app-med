@@ -665,3 +665,21 @@ th{
   color:white;
   font-weight:700;
 }
+.import-label,
+.file-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #facc15;
+  color: #111827;
+  font-weight: 800;
+  border-radius: 18px;
+  padding: 14px 20px;
+  margin: 6px;
+}
+
+.import-label input,
+.file-label input {
+  display: none;
+}

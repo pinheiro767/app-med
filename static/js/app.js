@@ -350,7 +350,7 @@ function renderGrafico(linhas) {
   const ctx = document.getElementById("chartGrupos");
   if (!ctx) return;
 
-  const labels = linhas.map(l => `G${l.grupo}`);
+  const labels = linhas.map(l => `${l.semana}-${l.grupo}`);
   const dados = linhas.map(l => l.nota);
 
   if (chart) {
@@ -431,6 +431,85 @@ window.importarAvaliacaoJSON = function(event) {
 /* ==============================
    INICIALIZAÇÃO
 ================================*/
+
+function renderSemanas() {
+  const container = document.getElementById("weekCards");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  Object.entries(SEMANAS).forEach(([semanaId, semana]) => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    let html = `
+      <span class="badge">${escapeHtml(semana.titulo)}</span>
+      <p>${escapeHtml(semana.descricao)}</p>
+    `;
+
+    Object.entries(semana.turmas).forEach(([turmaId, turma]) => {
+      html += `<div class="group-content"><h3>${escapeHtml(turma.titulo)}</h3>`;
+
+      Object.entries(turma.grupos).forEach(([grupoId]) => {
+        html += `
+          <button class="secondary" onclick="abrirGrupo('${semanaId}', '${turmaId}', '${grupoId}')">
+            Grupo ${grupoId}
+          </button>
+        `;
+      });
+
+      html += `</div>`;
+    });
+
+    card.innerHTML = html;
+    container.appendChild(card);
+  });
+}
+
+window.abrirGrupo = function(semanaId, turmaId, grupoId) {
+  grupoAbertoAtual = { semanaId, turmaId, grupoId };
+
+  const grupo = SEMANAS[semanaId].turmas[turmaId].grupos[grupoId];
+  const area = document.getElementById("evaluationArea");
+  if (!area) return;
+
+  area.innerHTML = `
+    <div class="card">
+      <h2>${escapeHtml(grupo.titulo)}</h2>
+      <p><strong>${escapeHtml(SEMANAS[semanaId].turmas[turmaId].titulo)}</strong></p>
+
+      <details class="accordion" open>
+        <summary>Avaliação</summary>
+        ${CRITERIOS_GERAIS.map((criterio, index) => {
+          const kCarmem = key(semanaId, turmaId, grupoId, index, "carmem");
+          const kClaudia = key(semanaId, turmaId, grupoId, index, "claudia");
+
+          return `
+            <div class="evaluation-grid">
+              <strong>${index + 1}. ${escapeHtml(criterio)}</strong>
+
+              <label>
+                Carmem
+                <input type="number" min="0" max="10" step="0.1"
+                  value="${escapeHtml(state[kCarmem] || "")}"
+                  oninput="salvarNota('${kCarmem}', this.value)">
+              </label>
+
+              <label>
+                Cláudia
+                <input type="number" min="0" max="10" step="0.1"
+                  value="${escapeHtml(state[kClaudia] || "")}"
+                  oninput="salvarNota('${kClaudia}', this.value)">
+              </label>
+            </div>
+          `;
+        }).join("")}
+      </details>
+    </div>
+  `;
+
+  area.scrollIntoView({ behavior: "smooth" });
+};
 
 renderSemanas();
 updateAnalytics();

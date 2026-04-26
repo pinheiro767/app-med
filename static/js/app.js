@@ -431,7 +431,61 @@ window.importarAvaliacaoJSON = function(event) {
 /* ==============================
    INICIALIZAÇÃO
 ================================*/
+window.abrirImagemGrupo4 = function(img, numero) {
+  const antigo = document.getElementById("imageModal");
+  if (antigo) antigo.remove();
 
+  zoomAtual = 1;
+
+  const modal = document.createElement("div");
+  modal.id = "imageModal";
+
+  modal.innerHTML = `
+    <div class="modal-bg" onclick="fecharImagemGrupo4()"></div>
+
+    <div class="modal-content">
+      <button class="modal-close" onclick="fecharImagemGrupo4()">×</button>
+
+      <div class="zoom-toolbar">
+        <button onclick="zoomImagemGrupo4(0.25)">+</button>
+        <button onclick="zoomImagemGrupo4(-0.25)">−</button>
+        <button onclick="resetZoomGrupo4()">Resetar</button>
+      </div>
+
+      <img
+        src="/static/imagens/grupo4/${img}"
+        class="modal-img"
+        id="modalImg"
+        alt="Imagem ${numero}"
+      >
+
+      <p class="modal-caption">Imagem ${numero} — ${img}</p>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+};
+
+window.fecharImagemGrupo4 = function() {
+  const modal = document.getElementById("imageModal");
+  if (modal) modal.remove();
+};
+
+window.zoomImagemGrupo4 = function(valor) {
+  const img = document.getElementById("modalImg");
+  if (!img) return;
+
+  zoomAtual = Math.max(0.5, Math.min(5, zoomAtual + valor));
+  img.style.transform = `scale(${zoomAtual})`;
+};
+
+window.resetZoomGrupo4 = function() {
+  const img = document.getElementById("modalImg");
+  if (!img) return;
+
+  zoomAtual = 1;
+  img.style.transform = "scale(1)";
+};
 function renderSemanas() {
   const container = document.getElementById("weekCards");
   if (!container) return;
@@ -546,7 +600,7 @@ function renderGaleriaGrupo4(imagens) {
       <summary>Imagens do Grupo 4 — Anatomia Radiológica</summary>
       <div class="gallery">
         ${imagens.map((img, index) => `
-          <figure class="image-card">
+          <figure class="image-card" onclick="abrirImagemGrupo4('${img}', ${index + 1})">
             <img src="/static/imagens/grupo4/${img}" alt="Imagem ${index + 1}">
             <figcaption>Imagem ${index + 1} — ${img}</figcaption>
           </figure>

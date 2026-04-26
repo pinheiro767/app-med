@@ -556,9 +556,10 @@ window.updateAnalytics = function() {
     }
   });
 
-  const r = notasClaudia.length > 1
-    ? correlacaoPearson(notasClaudia, notasCarmen)
-    : 0;
+  const campoCorrelacao = document.getElementById("correlacao");
+if (campoCorrelacao) {
+  campoCorrelacao.textContent = "0.00";
+}
 
   const campoCorrelacao = document.getElementById("correlacao");
   if (campoCorrelacao) {

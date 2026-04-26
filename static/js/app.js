@@ -475,10 +475,39 @@ window.abrirGrupo = function(semanaId, turmaId, grupoId) {
 
   area.innerHTML = `
     <div class="card">
+      <span class="badge">${escapeHtml(SEMANAS[semanaId].titulo)}</span>
       <h2>${escapeHtml(grupo.titulo)}</h2>
       <p><strong>${escapeHtml(SEMANAS[semanaId].turmas[turmaId].titulo)}</strong></p>
 
+      <details class="accordion">
+        <summary>Alunos responsáveis</summary>
+        <ul class="student-list">
+          ${grupo.alunos.map(a => `<li>${escapeHtml(a)}</li>`).join("")}
+        </ul>
+      </details>
+
       <details class="accordion" open>
+        <summary>O que o grupo deve fazer</summary>
+        ${grupo.conteudo.map(secao => `
+          <div class="group-content">
+            <h3>${escapeHtml(secao.titulo)}</h3>
+            <ul>
+              ${secao.itens.map(item => `<li>${escapeHtml(item)}</li>`).join("")}
+            </ul>
+          </div>
+        `).join("")}
+      </details>
+
+      <details class="accordion">
+        <summary>O que observar na avaliação</summary>
+        <ul>
+          ${grupo.observar.map(item => `<li>${escapeHtml(item)}</li>`).join("")}
+        </ul>
+      </details>
+
+      ${grupo.imagens ? renderGaleriaGrupo4(grupo.imagens) : ""}
+
+      <details class="accordion">
         <summary>Avaliação</summary>
         ${CRITERIOS_GERAIS.map((criterio, index) => {
           const kCarmem = key(semanaId, turmaId, grupoId, index, "carmem");
@@ -511,5 +540,20 @@ window.abrirGrupo = function(semanaId, turmaId, grupoId) {
   area.scrollIntoView({ behavior: "smooth" });
 };
 
+function renderGaleriaGrupo4(imagens) {
+  return `
+    <details class="accordion" open>
+      <summary>Imagens do Grupo 4 — Anatomia Radiológica</summary>
+      <div class="gallery">
+        ${imagens.map((img, index) => `
+          <figure class="image-card">
+            <img src="/static/imagens/grupo4/${img}" alt="Imagem ${index + 1}">
+            <figcaption>Imagem ${index + 1} — ${img}</figcaption>
+          </figure>
+        `).join("")}
+      </div>
+    </details>
+  `;
+}
 renderSemanas();
 updateAnalytics();

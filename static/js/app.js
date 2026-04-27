@@ -32,22 +32,18 @@ function interpretarChave(chave) {
   };
 }
 
-function uploadKey(semanaId, turmaId, grupoId) {
-  return `uploads_${semanaId}_${turmaId}_${grupoId}`;
-}
-
-function getUploads(semanaId, turmaId, grupoId) {
-  return state[uploadKey(semanaId, turmaId, grupoId)] || { fotos: [], arquivos: [] };
-}
-
-function setUploads(semanaId, turmaId, grupoId, dados) {
-  state[uploadKey(semanaId, turmaId, grupoId)] = dados;
-  salvar();
-}
-
 function numero(valor) {
   const n = Number(valor);
   return Number.isFinite(n) ? n : 0;
+}
+
+function normalizarNota(valor) {
+  if (valor === "" || valor === null || valor === undefined) return "";
+  let n = Number(valor);
+  if (!Number.isFinite(n)) return "";
+  if (n < 0) n = 0;
+  if (n > 0.1) n = 0.1;
+  return Number(n.toFixed(2));
 }
 
 function media(valores) {
@@ -80,6 +76,12 @@ function escapeHtml(texto) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function formatarCriterio(criterio) {
+  return escapeHtml(criterio)
+    .replace(" A. ", "<br><span>A. ")
+    .replace(" B. ", "</span><br><span>B. ") + "</span>";
 }
 
 /* ==============================
@@ -188,8 +190,8 @@ window.limparFotosIndexedDB = async function(grupo) {
 ================================*/
 
 async function salvarNotaSupabase(chave, valor) {
-  const nota = Number(valor);
-  if (!Number.isFinite(nota)) return;
+  const nota = normalizarNota(valor);
+  if (nota === "") return;
 
   const dados = interpretarChave(chave);
   const criterio = CRITERIOS_GERAIS[dados.criterioIndex] || `Critério ${dados.criterioIndex + 1}`;
@@ -223,26 +225,22 @@ async function salvarNotaSupabase(chave, valor) {
 
   if (data && data.length > 0) {
     const { error } = await supabase
-        .from("avaliacoes")
-  .update({ nota: registro.nota })
-  .eq("id", data[0].id);
+      .from("avaliacoes")
+      .update({ nota: registro.nota })
+      .eq("id", data[0].id);
 
-  if (error) {
-    console.error("Erro ao atualizar nota:", error);
+    if (error) {
+      console.error("Erro ao atualizar nota:", error);
+    }
+  } else {
+    const { error } = await supabase
+      .from("avaliacoes")
+      .insert(registro);
+
+    if (error) {
+      console.error("Erro ao inserir nota:", error);
+    }
   }
-
-} else {
-
-  const { error } = await supabase
-    .from("avaliacoes")
-    .insert(registro);
-
-  if (error) {
-    console.error("Erro ao inserir nota:", error);
-  }
-
-}
-
 }
 
 /* ==============================
@@ -250,14 +248,17 @@ async function salvarNotaSupabase(chave, valor) {
 ================================*/
 
 window.salvarNota = function(chave, valor) {
+  const nota = normalizarNota(valor);
 
-  state[chave] = valor;
+  if (nota === "") {
+    delete state[chave];
+  } else {
+    state[chave] = nota;
+  }
+
   salvar();
-
-  salvarNotaSupabase(chave, valor);
-
+  salvarNotaSupabase(chave, nota);
   updateAnalytics();
-
 };
 
 /* ==============================
@@ -265,12 +266,11 @@ window.salvarNota = function(chave, valor) {
 ================================*/
 
 function coletarResultados() {
-
   const resultados = [];
 
   Object.entries(state).forEach(([chave, valor]) => {
-
     if (!chave.includes("_G")) return;
+    if (chave.startsWith("uploads_")) return;
 
     const info = interpretarChave(chave);
 
@@ -283,11 +283,9 @@ function coletarResultados() {
       nota: numero(valor),
       media: numero(valor)
     });
-
   });
 
   return resultados;
-
 }
 
 /* ==============================
@@ -295,7 +293,6 @@ function coletarResultados() {
 ================================*/
 
 window.updateAnalytics = function() {
-
   const linhas = coletarResultados();
   const medias = linhas.map(l => l.media).filter(v => v > 0);
 
@@ -309,7 +306,6 @@ window.updateAnalytics = function() {
 
   renderTabelaResultados(linhas);
   renderGrafico(linhas);
-
 };
 
 /* ==============================
@@ -317,14 +313,12 @@ window.updateAnalytics = function() {
 ================================*/
 
 function renderTabelaResultados(linhas) {
-
   const tbody = document.getElementById("resultsBody");
   if (!tbody) return;
 
   tbody.innerHTML = "";
 
   linhas.forEach(l => {
-
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
@@ -332,13 +326,11 @@ function renderTabelaResultados(linhas) {
       <td>${escapeHtml(l.turma)}</td>
       <td>${escapeHtml(l.grupo)}</td>
       <td>${escapeHtml(l.avaliadora)}</td>
-      <td>${escapeHtml(l.nota)}</td>
+      <td>${escapeHtml(l.nota.toFixed(2))}</td>
     `;
 
     tbody.appendChild(tr);
-
   });
-
 }
 
 /* ==============================
@@ -346,7 +338,6 @@ function renderTabelaResultados(linhas) {
 ================================*/
 
 function renderGrafico(linhas) {
-
   const ctx = document.getElementById("chartGrupos");
   if (!ctx) return;
 
@@ -362,15 +353,20 @@ function renderGrafico(linhas) {
     data: {
       labels,
       datasets: [{
-        label: "Notas",
+        label: "Notas por critério",
         data: dados
       }]
     },
     options: {
-      responsive: true
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 0.1
+        }
+      }
     }
   });
-
 }
 
 /* ==============================
@@ -378,7 +374,6 @@ function renderGrafico(linhas) {
 ================================*/
 
 window.exportarAvaliacaoJSON = function() {
-
   const blob = new Blob([JSON.stringify(state, null, 2)], {
     type: "application/json"
   });
@@ -389,7 +384,6 @@ window.exportarAvaliacaoJSON = function() {
   a.href = url;
   a.download = "avaliacao_anatomia.json";
   a.click();
-
 };
 
 /* ==============================
@@ -397,16 +391,13 @@ window.exportarAvaliacaoJSON = function() {
 ================================*/
 
 window.importarAvaliacaoJSON = function(event) {
-
   const file = event.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
 
   reader.onload = function(e) {
-
     try {
-
       const dados = JSON.parse(e.target.result);
 
       state = dados;
@@ -415,22 +406,18 @@ window.importarAvaliacaoJSON = function(event) {
       alert("Avaliação importada com sucesso.");
 
       updateAnalytics();
-
     } catch {
-
       alert("Erro ao importar. Verifique se o arquivo é um JSON válido exportado pelo app.");
-
     }
-
   };
 
   reader.readAsText(file);
-
 };
 
 /* ==============================
-   INICIALIZAÇÃO
+   IMAGENS GRUPO 4
 ================================*/
+
 window.abrirImagemGrupo4 = function(img, numero) {
   const antigo = document.getElementById("imageModal");
   if (antigo) antigo.remove();
@@ -453,13 +440,13 @@ window.abrirImagemGrupo4 = function(img, numero) {
       </div>
 
       <img
-        src="/static/imagens/grupo4/${img}"
+        src="/static/imagens/grupo4/${escapeHtml(img)}"
         class="modal-img"
         id="modalImg"
-        alt="Imagem ${numero}"
+        alt="Imagem ${escapeHtml(numero)}"
       >
 
-      <p class="modal-caption">Imagem ${numero} — ${img}</p>
+      <p class="modal-caption">Imagem ${escapeHtml(numero)} — ${escapeHtml(img)}</p>
     </div>
   `;
 
@@ -486,6 +473,11 @@ window.resetZoomGrupo4 = function() {
   zoomAtual = 1;
   img.style.transform = "scale(1)";
 };
+
+/* ==============================
+   RENDER SEMANAS E GRUPOS
+================================*/
+
 function renderSemanas() {
   const container = document.getElementById("weekCards");
   if (!container) return;
@@ -561,27 +553,32 @@ window.abrirGrupo = function(semanaId, turmaId, grupoId) {
 
       ${grupo.imagens ? renderGaleriaGrupo4(grupo.imagens) : ""}
 
-      <details class="accordion">
+      <details class="accordion" open>
         <summary>Avaliação</summary>
+
+        <p>
+          Cada critério vale de <strong>0 até 0,1</strong>.
+        </p>
+
         ${CRITERIOS_GERAIS.map((criterio, index) => {
           const kCarmem = key(semanaId, turmaId, grupoId, index, "carmem");
           const kClaudia = key(semanaId, turmaId, grupoId, index, "claudia");
 
           return `
             <div class="evaluation-grid">
-              <strong>${index + 1}. ${escapeHtml(criterio)}</strong>
+              <strong>${formatarCriterio(criterio)}</strong>
 
               <label>
                 Carmem
-                <input type="number" min="0" max="10" step="0.1"
-                  value="${escapeHtml(state[kCarmem] || "")}"
+                <input type="number" min="0" max="0.1" step="0.01"
+                  value="${escapeHtml(state[kCarmem] ?? "")}"
                   oninput="salvarNota('${kCarmem}', this.value)">
               </label>
 
               <label>
                 Cláudia
-                <input type="number" min="0" max="10" step="0.1"
-                  value="${escapeHtml(state[kClaudia] || "")}"
+                <input type="number" min="0" max="0.1" step="0.01"
+                  value="${escapeHtml(state[kClaudia] ?? "")}"
                   oninput="salvarNota('${kClaudia}', this.value)">
               </label>
             </div>
@@ -600,15 +597,20 @@ function renderGaleriaGrupo4(imagens) {
       <summary>Imagens do Grupo 4 — Anatomia Radiológica</summary>
       <div class="gallery">
         ${imagens.map((img, index) => `
-          <figure class="image-card" onclick="abrirImagemGrupo4('${img}', ${index + 1})">
-            <img src="/static/imagens/grupo4/${img}" alt="Imagem ${index + 1}">
-            <figcaption>Imagem ${index + 1} — ${img}</figcaption>
+          <figure class="image-card" onclick="abrirImagemGrupo4('${escapeHtml(img)}', ${index + 1})">
+            <img src="/static/imagens/grupo4/${escapeHtml(img)}" alt="Imagem ${index + 1}">
+            <figcaption>Imagem ${index + 1} — ${escapeHtml(img)}</figcaption>
           </figure>
         `).join("")}
       </div>
     </details>
   `;
 }
+
+/* ==============================
+   PWA
+================================*/
+
 let deferredPrompt = null;
 
 window.addEventListener("beforeinstallprompt", event => {
@@ -642,5 +644,12 @@ function registrarPWA() {
     navigator.serviceWorker.register("/sw.js").catch(console.error);
   }
 }
+
+/* ==============================
+   INICIAR APP
+================================*/
+
 renderSemanas();
 updateAnalytics();
+configurarInstalacao();
+registrarPWA();

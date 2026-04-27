@@ -837,14 +837,10 @@ SEMANAS.semana2.turmas.t3t4.grupos = {
 };
 
 export const CRITERIOS_GERAIS = [
-  "Correção anatômica das estruturas representadas",
-  "Organização espacial no esqueleto ou modelo físico",
-  "Identificação correta das estruturas solicitadas",
-  "Coerência topográfica, funcional ou radiológica",
-  "Clareza da explicação oral do grupo",
-  "Qualidade do material físico e palpável",
-  "Integração clínica ou aplicada ao conteúdo",
-  "Participação e domínio dos integrantes"
+  "1. Sobre o material (0,1) A. Qualidade e correlação anatômica das estruturas representadas B. Coerência topográfica, funcional e/ou radiológica",
+  "2. Clareza e domínio da explicação oral (0,1)",
+  "3. Integração clínica ou aplicada do modelo (0,1)",
+  "4. Integração e domínio dos integrantes do grupo (0,1)"
 ];
 
 export const AVALIADORAS = [

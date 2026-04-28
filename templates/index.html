@@ -1,230 +1,200 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avaliação de Anatomia</title>
 
-<title>Avaliação de Anatomia</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 
-<link rel="manifest" href="/manifest.json">
-<link rel="stylesheet" href="/static/css/style.css">
-<link rel="icon" type="image/png" href="/static/icons/icon-192.png">
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <meta name="theme-color" content="#0f172a">
 
-<meta name="theme-color" content="#0f172a">
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 
 <body>
 
-<header class="hero">
-<div>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Universidade Estadual de Maringá · DCM</p>
+
+      <h1>Avaliação de Anatomia</h1>
+
+      <p>
+        PWA para avaliação de atividades práticas, registro fotográfico,
+        cálculo de notas, estatística, gráficos e exportação dos resultados.
+      </p>
+
+      <button id="installAppBtn" type="button" style="display:none;">
+        Baixar app
+      </button>
+    </div>
+  </header>
+
+  <main id="app-root" class="container">
+
+    <section class="panel">
+      <h2>Semanas e grupos</h2>
+
+      <p>
+        Selecione a semana, turma e grupo para visualizar o conteúdo,
+        os alunos responsáveis e preencher a avaliação.
+      </p>
+
+      <div id="weekCards" class="cards-grid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Avaliação</h2>
+
+      <p>
+        Cada critério vale de <strong>0 até 0,1</strong>. As professoras avaliam
+        os mesmos critérios e o sistema registra as notas por semana, turma,
+        grupo, critério e avaliadora.
+      </p>
+
+      <div id="evaluationArea"></div>
+    </section>
+
+    <section class="panel">
+      <details class="accordion">
+        <summary>Registro fotográfico da aula</summary>
+
+        <p>
+          Use esta área para tirar fotos ou anexar imagens dos modelos físicos.
+          As imagens ficam salvas no próprio aparelho pelo navegador.
+        </p>
+
+        <div class="button-group">
+
+          <label class="import-label">
+            Tirar foto
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onchange="uploadFotoIndexedDB(event, 'registro-geral')"
+            >
+          </label>
+
+          <label class="import-label">
+            Anexar imagens
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onchange="uploadFotoIndexedDB(event, 'registro-geral')"
+            >
+          </label>
+
+          <button type="button" onclick="listarFotosIndexedDB('registro-geral')">
+            Mostrar fotos salvas
+          </button>
+
+          <button type="button" onclick="limparFotosIndexedDB('registro-geral')">
+            Limpar fotos deste registro
+          </button>
+
+        </div>
+
+        <div id="fotosIndexedDB" class="gallery"></div>
+      </details>
+    </section>
+
+    <section class="panel">
+      <h2>Estatística, gráficos e exportação</h2>
+
+      <div class="button-group">
+
+        <button type="button" onclick="updateAnalytics()">
+          Atualizar cálculos
+        </button>
+
+        <button type="button" onclick="exportCSV()">
+          Exportar CSV
+        </button>
+
+        <button type="button" onclick="gerarPDF()">
+          Gerar PDF
+        </button>
 
-<p class="eyebrow">Universidade Estadual de Maringá · DCM</p>
+        <button type="button" onclick="exportarAvaliacaoJSON()">
+          Exportar avaliação JSON
+        </button>
 
-<h1>Avaliação de Anatomia</h1>
+        <label class="import-label">
+          Importar avaliação JSON
+          <input
+            type="file"
+            accept=".json,application/json"
+            onchange="importarAvaliacaoJSON(event)"
+          >
+        </label>
 
-<p>
-PWA para avaliação de atividades práticas, registro fotográfico,
-cálculo de notas, estatística e gráficos.
-</p>
+      </div>
 
-<button id="installAppBtn" style="display:none;">
-Baixar app
-</button>
+      <div class="stats-grid">
 
-</div>
-</header>
+        <div class="stat-card">
+          <span>Média geral</span>
+          <strong id="mediaGeral">0.00</strong>
+        </div>
 
-<main id="app-root" class="container">
+        <div class="stat-card">
+          <span>Mediana</span>
+          <strong id="medianaGeral">0.00</strong>
+        </div>
 
-<!-- SEMANAS E GRUPOS -->
+        <div class="stat-card">
+          <span>Desvio padrão</span>
+          <strong id="desvioPadrao">0.00</strong>
+        </div>
 
-<section class="panel">
+        <div class="stat-card">
+          <span>Correlação avaliadoras</span>
+          <strong id="correlacao">0.00</strong>
+        </div>
 
-<h2>Semanas e grupos</h2>
+      </div>
 
-<p>
-Selecione a semana, turma e grupo para visualizar conteúdo e avaliação.
-</p>
+      <div class="chart-wrap">
+        <canvas id="chartGrupos"></canvas>
+      </div>
 
-<div id="weekCards" class="cards-grid"></div>
+      <details class="accordion">
+        <summary>Resultados detalhados</summary>
 
-</section>
+        <div class="button-group">
 
-<!-- AVALIAÇÃO -->
+          <button type="button" onclick="mostrarResumoGrupos()">
+            Resumo por grupo
+          </button>
 
-<section class="panel">
+          <button type="button" onclick="mostrarDetalhesAlunos()">
+            Detalhes por grupo, critério e avaliadora
+          </button>
 
-<h2>Avaliação</h2>
+        </div>
 
-<p>
-As professoras avaliam os mesmos critérios.
-O sistema calcula automaticamente a média entre avaliadoras.
-</p>
+        <div class="table-wrap">
+          <table>
+            <thead id="resultsHead"></thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+      </details>
 
-<div id="evaluationArea"></div>
+    </section>
 
-</section>
+  </main>
 
-<!-- REGISTRO FOTOGRÁFICO -->
-
-<section class="panel">
-
-<details class="accordion">
-
-<summary>Registro fotográfico da aula</summary>
-
-<p>
-Use esta área para tirar fotos ou anexar imagens dos modelos físicos.
-As imagens ficam salvas no próprio aparelho pelo navegador.
-</p>
-
-<div class="button-group">
-<div class="button-group">
-
-  <label class="import-label">
-    Tirar foto
-    <input
-      type="file"
-      accept="image/*"
-      capture="environment"
-      onchange="uploadFotoIndexedDB(event, 'registro-geral')"
-    >
-  </label>
-
-  <label class="import-label">
-    Anexar imagens
-    <input
-      type="file"
-      accept="image/*"
-      multiple
-      onchange="uploadFotoIndexedDB(event, 'registro-geral')"
-    >
-  </label>
-
-  <button type="button" onclick="listarFotosIndexedDB('registro-geral')">
-    Mostrar fotos salvas
-  </button>
-
-  <button type="button" onclick="limparFotosIndexedDB('registro-geral')">
-    Limpar fotos deste registro
-  </button>
-
-</div>
-
-<div id="fotosIndexedDB" class="gallery"></div>
-
-</details>
-
-</section>
-
-<!-- ESTATÍSTICA -->
-
-<section class="panel">
-
-<h2>Estatística e gráficos</h2>
-
-<div class="button-group">
-
-<button onclick="updateAnalytics()">Atualizar cálculos</button>
-
-<button onclick="exportCSV()">Exportar CSV</button>
-
-<button onclick="gerarPDF()">Gerar PDF</button>
-
-<button onclick="exportarAvaliacaoJSON()">
-Exportar avaliação
-</button>
-
-<label class="import-label">
-
-Importar avaliação
-
-<input
-type="file"
-accept=".json"
-onchange="importarAvaliacaoJSON(event)"
->
-
-</label>
-
-</div>
-
-<!-- PAINEL ESTATÍSTICO -->
-
-<div class="stats-grid">
-
-<div class="stat-card">
-<span>Média geral</span>
-<strong id="mediaGeral">0.00</strong>
-</div>
-
-<div class="stat-card">
-<span>Mediana</span>
-<strong id="medianaGeral">0.00</strong>
-</div>
-
-<div class="stat-card">
-<span>Desvio padrão</span>
-<strong id="desvioPadrao">0.00</strong>
-</div>
-
-<div class="stat-card">
-<span>Correlação avaliadoras</span>
-<strong id="correlacao">0.00</strong>
-</div>
-
-</div>
-
-<!-- GRÁFICO -->
-
-<div class="chart-wrap">
-<canvas id="chartGrupos"></canvas>
-</div>
-
-<!-- RESULTADOS DETALHADOS -->
-
-<details class="accordion">
-
-<summary>Resultados detalhados</summary>
-
-<div class="button-group">
-
-<button onclick="mostrarResumoGrupos()">
-Resumo por grupo
-</button>
-
-<button onclick="mostrarDetalhesAlunos()">
-Detalhes por aluno
-</button>
-
-</div>
-
-<div class="table-wrap">
-
-<table>
-
-<thead id="resultsHead"></thead>
-
-<tbody id="resultsBody"></tbody>
-
-</table>
-
-</div>
-
-</details>
-
-</section>
-
-</main>
-
-<script type="module" src="/static/js/app.js"></script>
+  <script type="module" src="/static/js/app.js"></script>
 
 </body>
 </html>

@@ -39,10 +39,13 @@ function numero(valor) {
 
 function normalizarNota(valor) {
   if (valor === "" || valor === null || valor === undefined) return "";
-  let n = Number(valor);
+
+  let n = Number(String(valor).replace(",", "."));
+
   if (!Number.isFinite(n)) return "";
   if (n < 0) n = 0;
   if (n > 0.1) n = 0.1;
+
   return Number(n.toFixed(2));
 }
 
@@ -55,6 +58,7 @@ function media(valores) {
 function mediana(valores) {
   const nums = valores.map(numero).filter(v => v > 0).sort((a, b) => a - b);
   if (!nums.length) return 0;
+
   const meio = Math.floor(nums.length / 2);
   return nums.length % 2 ? nums[meio] : (nums[meio - 1] + nums[meio]) / 2;
 }
@@ -82,6 +86,24 @@ function formatarCriterio(criterio) {
   return escapeHtml(criterio)
     .replace(" A. ", "<br><span>A. ")
     .replace(" B. ", "</span><br><span>B. ") + "</span>";
+}
+
+function nomeAvaliadora(codigo) {
+  if (codigo === "carmem") return "Profª Drª Carmem Patrícia Barbosa";
+  if (codigo === "claudia") return "Profª Drª Cláudia Pinheiro";
+  return codigo;
+}
+
+function nomeSemana(id) {
+  return SEMANAS[id]?.titulo || id;
+}
+
+function nomeTurma(semanaId, turmaId) {
+  return SEMANAS[semanaId]?.turmas?.[turmaId]?.titulo || turmaId;
+}
+
+function nomeGrupo(semanaId, turmaId, grupoId) {
+  return SEMANAS[semanaId]?.turmas?.[turmaId]?.grupos?.[grupoId.replace("G", "")]?.titulo || grupoId;
 }
 
 /* ==============================
@@ -229,17 +251,13 @@ async function salvarNotaSupabase(chave, valor) {
       .update({ nota: registro.nota })
       .eq("id", data[0].id);
 
-    if (error) {
-      console.error("Erro ao atualizar nota:", error);
-    }
+    if (error) console.error("Erro ao atualizar nota:", error);
   } else {
     const { error } = await supabase
       .from("avaliacoes")
       .insert(registro);
 
-    if (error) {
-      console.error("Erro ao inserir nota:", error);
-    }
+    if (error) console.error("Erro ao inserir nota:", error);
   }
 }
 
@@ -247,13 +265,15 @@ async function salvarNotaSupabase(chave, valor) {
    SALVAR NOTAS
 ================================*/
 
-window.salvarNota = function(chave, valor) {
+window.salvarNota = function(chave, valor, input = null) {
   const nota = normalizarNota(valor);
 
   if (nota === "") {
     delete state[chave];
+    if (input) input.value = "";
   } else {
     state[chave] = nota;
+    if (input) input.value = nota.toFixed(2);
   }
 
   salvar();
@@ -273,13 +293,19 @@ function coletarResultados() {
     if (chave.startsWith("uploads_")) return;
 
     const info = interpretarChave(chave);
+    const criterioTexto = CRITERIOS_GERAIS[info.criterioIndex] || `Critério ${info.criterioIndex + 1}`;
 
     resultados.push({
       semana: info.semana,
+      semanaTitulo: nomeSemana(info.semana),
       turma: info.turma,
+      turmaTitulo: nomeTurma(info.semana, info.turma),
       grupo: info.grupo,
+      grupoTitulo: nomeGrupo(info.semana, info.turma, info.grupo),
       criterio: info.criterioIndex,
+      criterioTexto,
       avaliadora: info.avaliadora,
+      avaliadoraNome: nomeAvaliadora(info.avaliadora),
       nota: numero(valor),
       media: numero(valor)
     });
@@ -309,12 +335,24 @@ window.updateAnalytics = function() {
 };
 
 /* ==============================
-   RENDER TABELA
+   TABELAS
 ================================*/
 
 function renderTabelaResultados(linhas) {
+  const thead = document.getElementById("resultsHead");
   const tbody = document.getElementById("resultsBody");
-  if (!tbody) return;
+  if (!thead || !tbody) return;
+
+  thead.innerHTML = `
+    <tr>
+      <th>Semana</th>
+      <th>Turma</th>
+      <th>Grupo</th>
+      <th>Critério</th>
+      <th>Avaliadora</th>
+      <th>Nota</th>
+    </tr>
+  `;
 
   tbody.innerHTML = "";
 
@@ -322,16 +360,77 @@ function renderTabelaResultados(linhas) {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
-      <td>${escapeHtml(l.semana)}</td>
-      <td>${escapeHtml(l.turma)}</td>
-      <td>${escapeHtml(l.grupo)}</td>
-      <td>${escapeHtml(l.avaliadora)}</td>
+      <td>${escapeHtml(l.semanaTitulo)}</td>
+      <td>${escapeHtml(l.turmaTitulo)}</td>
+      <td>${escapeHtml(l.grupoTitulo)}</td>
+      <td>${escapeHtml(l.criterioTexto)}</td>
+      <td>${escapeHtml(l.avaliadoraNome)}</td>
       <td>${escapeHtml(l.nota.toFixed(2))}</td>
     `;
 
     tbody.appendChild(tr);
   });
 }
+
+window.mostrarDetalhesAlunos = function() {
+  renderTabelaResultados(coletarResultados());
+};
+
+window.mostrarResumoGrupos = function() {
+  const linhas = coletarResultados();
+  const mapa = {};
+
+  linhas.forEach(l => {
+    const id = `${l.semana}_${l.turma}_${l.grupo}`;
+
+    if (!mapa[id]) {
+      mapa[id] = {
+        semanaTitulo: l.semanaTitulo,
+        turmaTitulo: l.turmaTitulo,
+        grupoTitulo: l.grupoTitulo,
+        notas: []
+      };
+    }
+
+    mapa[id].notas.push(l.nota);
+  });
+
+  const resumo = Object.values(mapa).map(item => ({
+    ...item,
+    media: media(item.notas),
+    total: item.notas.reduce((a, b) => a + b, 0)
+  }));
+
+  const thead = document.getElementById("resultsHead");
+  const tbody = document.getElementById("resultsBody");
+  if (!thead || !tbody) return;
+
+  thead.innerHTML = `
+    <tr>
+      <th>Semana</th>
+      <th>Turma</th>
+      <th>Grupo</th>
+      <th>Média</th>
+      <th>Total lançado</th>
+    </tr>
+  `;
+
+  tbody.innerHTML = "";
+
+  resumo.forEach(r => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${escapeHtml(r.semanaTitulo)}</td>
+      <td>${escapeHtml(r.turmaTitulo)}</td>
+      <td>${escapeHtml(r.grupoTitulo)}</td>
+      <td>${escapeHtml(r.media.toFixed(2))}</td>
+      <td>${escapeHtml(r.total.toFixed(2))}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+};
 
 /* ==============================
    GRÁFICO
@@ -341,12 +440,10 @@ function renderGrafico(linhas) {
   const ctx = document.getElementById("chartGrupos");
   if (!ctx) return;
 
-  const labels = linhas.map(l => `${l.semana}-${l.grupo}`);
+  const labels = linhas.map(l => `${l.grupo.replace("G", "Grupo ")} - ${l.avaliadoraNome.split(" ").pop()}`);
   const dados = linhas.map(l => l.nota);
 
-  if (chart) {
-    chart.destroy();
-  }
+  if (chart) chart.destroy();
 
   chart = new Chart(ctx, {
     type: "bar",
@@ -370,20 +467,101 @@ function renderGrafico(linhas) {
 }
 
 /* ==============================
-   EXPORTAÇÃO JSON
+   EXPORTAÇÕES
 ================================*/
 
 window.exportarAvaliacaoJSON = function() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], {
+  const dadosExportados = coletarResultados().map(item => ({
+    semana: item.semanaTitulo,
+    turma: item.turmaTitulo,
+    grupo: item.grupoTitulo,
+    criterio: item.criterioTexto,
+    avaliadora: item.avaliadoraNome,
+    nota: item.nota
+  }));
+
+  const blob = new Blob([JSON.stringify(dadosExportados, null, 2)], {
     type: "application/json"
   });
 
   const url = URL.createObjectURL(blob);
-
   const a = document.createElement("a");
+
   a.href = url;
-  a.download = "avaliacao_anatomia.json";
+  a.download = "avaliacao_anatomia_completa.json";
   a.click();
+
+  URL.revokeObjectURL(url);
+};
+
+window.exportCSV = function() {
+  const linhas = coletarResultados();
+
+  const cabecalho = [
+    "Semana",
+    "Turma",
+    "Grupo",
+    "Critério",
+    "Avaliadora",
+    "Nota"
+  ];
+
+  const csv = [
+    cabecalho.join(";"),
+    ...linhas.map(l => [
+      l.semanaTitulo,
+      l.turmaTitulo,
+      l.grupoTitulo,
+      l.criterioTexto,
+      l.avaliadoraNome,
+      l.nota.toFixed(2).replace(".", ",")
+    ].map(campo => `"${String(campo).replaceAll('"', '""')}"`).join(";"))
+  ].join("\n");
+
+  const blob = new Blob(["\ufeff" + csv], {
+    type: "text/csv;charset=utf-8;"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = "avaliacao_anatomia.csv";
+  a.click();
+
+  URL.revokeObjectURL(url);
+};
+
+window.gerarPDF = async function() {
+  const area = document.getElementById("app-root");
+  if (!area || !window.jspdf || !window.html2canvas) {
+    alert("Não foi possível gerar PDF. Verifique se jsPDF e html2canvas carregaram.");
+    return;
+  }
+
+  const canvas = await html2canvas(area, { scale: 2 });
+  const imgData = canvas.toDataURL("image/png");
+
+  const pdf = new window.jspdf.jsPDF("p", "mm", "a4");
+  const pageWidth = 210;
+  const pageHeight = 297;
+  const imgWidth = pageWidth;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  let heightLeft = imgHeight;
+  let position = 0;
+
+  pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+  heightLeft -= pageHeight;
+
+  while (heightLeft > 0) {
+    position = heightLeft - imgHeight;
+    pdf.addPage();
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+  }
+
+  pdf.save("avaliacao_anatomia.pdf");
 };
 
 /* ==============================
@@ -400,11 +578,15 @@ window.importarAvaliacaoJSON = function(event) {
     try {
       const dados = JSON.parse(e.target.result);
 
+      if (Array.isArray(dados)) {
+        alert("Este JSON é um relatório exportado. Para restaurar notas editáveis, importe o JSON original do state.");
+        return;
+      }
+
       state = dados;
       salvar();
 
       alert("Avaliação importada com sucesso.");
-
       updateAnalytics();
     } catch {
       alert("Erro ao importar. Verifique se o arquivo é um JSON válido exportado pelo app.");
@@ -558,6 +740,7 @@ window.abrirGrupo = function(semanaId, turmaId, grupoId) {
 
         <p>
           Cada critério vale de <strong>0 até 0,1</strong>.
+          Se for digitado valor maior, o sistema corrige automaticamente para <strong>0,10</strong>.
         </p>
 
         ${CRITERIOS_GERAIS.map((criterio, index) => {
@@ -572,14 +755,14 @@ window.abrirGrupo = function(semanaId, turmaId, grupoId) {
                 Carmem
                 <input type="number" min="0" max="0.1" step="0.01"
                   value="${escapeHtml(state[kCarmem] ?? "")}"
-                  oninput="salvarNota('${kCarmem}', this.value)">
+                  oninput="salvarNota('${kCarmem}', this.value, this)">
               </label>
 
               <label>
                 Cláudia
                 <input type="number" min="0" max="0.1" step="0.01"
                   value="${escapeHtml(state[kClaudia] ?? "")}"
-                  oninput="salvarNota('${kClaudia}', this.value)">
+                  oninput="salvarNota('${kClaudia}', this.value, this)">
               </label>
             </div>
           `;

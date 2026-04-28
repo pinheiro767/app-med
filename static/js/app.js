@@ -10,7 +10,6 @@ const STORAGE_KEY = "avaliacao_anatomia_pwa_v3";
 let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 let chart = null;
 let zoomAtual = 1;
-let grupoAbertoAtual = null;
 
 function salvar() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -71,6 +70,51 @@ function desvioPadrao(valores) {
   const variancia = nums.reduce((acc, v) => acc + Math.pow(v - m, 2), 0) / (nums.length - 1);
 
   return Math.sqrt(variancia);
+}
+
+function correlacaoPearson(x, y) {
+  if (!Array.isArray(x) || !Array.isArray(y)) return 0;
+
+  const pares = [];
+
+  for (let i = 0; i < Math.min(x.length, y.length); i++) {
+    const vx = Number(x[i]);
+    const vy = Number(y[i]);
+
+    if (Number.isFinite(vx) && Number.isFinite(vy)) {
+      pares.push([vx, vy]);
+    }
+  }
+
+  const n = pares.length;
+  if (n < 2) return 0;
+
+  let somaX = 0;
+  let somaY = 0;
+  let somaXY = 0;
+  let somaX2 = 0;
+  let somaY2 = 0;
+
+  pares.forEach(([vx, vy]) => {
+    somaX += vx;
+    somaY += vy;
+    somaXY += vx * vy;
+    somaX2 += vx * vx;
+    somaY2 += vy * vy;
+  });
+
+  const numerador = n * somaXY - somaX * somaY;
+
+  const denominador = Math.sqrt(
+    (n * somaX2 - somaX * somaX) *
+    (n * somaY2 - somaY * somaY)
+  );
+
+  if (!Number.isFinite(denominador) || denominador === 0) return 0;
+
+  const r = numerador / denominador;
+
+  return Number.isFinite(r) ? Number(r.toFixed(4)) : 0;
 }
 
 function escapeHtml(texto) {
@@ -325,10 +369,35 @@ window.updateAnalytics = function() {
   const campoMedia = document.getElementById("mediaGeral");
   const campoMediana = document.getElementById("medianaGeral");
   const campoDesvio = document.getElementById("desvioPadrao");
+  const campoCorrelacao = document.getElementById("correlacao");
 
   if (campoMedia) campoMedia.textContent = media(medias).toFixed(2);
   if (campoMediana) campoMediana.textContent = mediana(medias).toFixed(2);
   if (campoDesvio) campoDesvio.textContent = desvioPadrao(medias).toFixed(2);
+
+  const notasCarmem = [];
+  const notasClaudia = [];
+
+  linhas.forEach(linha => {
+    if (linha.avaliadora === "carmem") {
+      const par = linhas.find(item =>
+        item.semana === linha.semana &&
+        item.turma === linha.turma &&
+        item.grupo === linha.grupo &&
+        item.criterio === linha.criterio &&
+        item.avaliadora === "claudia"
+      );
+
+      if (par) {
+        notasCarmem.push(linha.nota);
+        notasClaudia.push(par.nota);
+      }
+    }
+  });
+
+  if (campoCorrelacao) {
+    campoCorrelacao.textContent = correlacaoPearson(notasCarmem, notasClaudia).toFixed(2);
+  }
 
   renderTabelaResultados(linhas);
   renderGrafico(linhas);
@@ -534,6 +603,7 @@ window.exportCSV = function() {
 
 window.gerarPDF = async function() {
   const area = document.getElementById("app-root");
+
   if (!area || !window.jspdf || !window.html2canvas) {
     alert("Não foi possível gerar PDF. Verifique se jsPDF e html2canvas carregaram.");
     return;
@@ -579,7 +649,7 @@ window.importarAvaliacaoJSON = function(event) {
       const dados = JSON.parse(e.target.result);
 
       if (Array.isArray(dados)) {
-        alert("Este JSON é um relatório exportado. Para restaurar notas editáveis, importe o JSON original do state.");
+        alert("Este JSON é um relatório exportado. Para restaurar notas editáveis, importe o arquivo original de backup do state.");
         return;
       }
 
@@ -695,8 +765,6 @@ function renderSemanas() {
 }
 
 window.abrirGrupo = function(semanaId, turmaId, grupoId) {
-  grupoAbertoAtual = { semanaId, turmaId, grupoId };
-
   const grupo = SEMANAS[semanaId].turmas[turmaId].grupos[grupoId];
   const area = document.getElementById("evaluationArea");
   if (!area) return;

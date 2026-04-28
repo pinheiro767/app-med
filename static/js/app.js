@@ -21,7 +21,6 @@ function key(semana, turma, grupo, criterio, avaliadora) {
 
 function interpretarChave(chave) {
   const partes = chave.split("_");
-
   return {
     semana: partes[0],
     turma: partes[1],
@@ -57,7 +56,6 @@ function media(valores) {
 function mediana(valores) {
   const nums = valores.map(numero).filter(v => v > 0).sort((a, b) => a - b);
   if (!nums.length) return 0;
-
   const meio = Math.floor(nums.length / 2);
   return nums.length % 2 ? nums[meio] : (nums[meio - 1] + nums[meio]) / 2;
 }
@@ -152,8 +150,7 @@ function nomeGrupo(semanaId, turmaId, grupoId) {
 
 function alunosGrupo(semanaId, turmaId, grupoId) {
   const id = String(grupoId).replace("G", "");
-  const alunos = SEMANAS[semanaId]?.turmas?.[turmaId]?.grupos?.[id]?.alunos || [];
-  return alunos.join(", ");
+  return SEMANAS[semanaId]?.turmas?.[turmaId]?.grupos?.[id]?.alunos || [];
 }
 
 /* ==============================
@@ -344,6 +341,40 @@ function coletarResultados() {
 
     const info = interpretarChave(chave);
     const criterioTexto = CRITERIOS_GERAIS[info.criterioIndex] || `Critério ${info.criterioIndex + 1}`;
+    const alunos = alunosGrupo(info.semana, info.turma, info.grupo);
+
+    alunos.forEach(aluno => {
+      resultados.push({
+        chave,
+        semana: info.semana,
+        semanaTitulo: nomeSemana(info.semana),
+        turma: info.turma,
+        turmaTitulo: nomeTurma(info.semana, info.turma),
+        grupo: info.grupo,
+        grupoTitulo: nomeGrupo(info.semana, info.turma, info.grupo),
+        aluno,
+        criterio: info.criterioIndex,
+        criterioTexto,
+        avaliadora: info.avaliadora,
+        avaliadoraNome: nomeAvaliadora(info.avaliadora),
+        nota: numero(valor),
+        media: numero(valor)
+      });
+    });
+  });
+
+  return resultados;
+}
+
+function coletarResultadosPorGrupo() {
+  const resultados = [];
+
+  Object.entries(state).forEach(([chave, valor]) => {
+    if (!chave.includes("_G")) return;
+    if (chave.startsWith("uploads_")) return;
+
+    const info = interpretarChave(chave);
+    const criterioTexto = CRITERIOS_GERAIS[info.criterioIndex] || `Critério ${info.criterioIndex + 1}`;
 
     resultados.push({
       chave,
@@ -353,7 +384,6 @@ function coletarResultados() {
       turmaTitulo: nomeTurma(info.semana, info.turma),
       grupo: info.grupo,
       grupoTitulo: nomeGrupo(info.semana, info.turma, info.grupo),
-      alunos: alunosGrupo(info.semana, info.turma, info.grupo),
       criterio: info.criterioIndex,
       criterioTexto,
       avaliadora: info.avaliadora,
@@ -371,8 +401,9 @@ function coletarResultados() {
 ================================*/
 
 window.updateAnalytics = function() {
-  const linhas = coletarResultados();
-  const medias = linhas.map(l => l.media).filter(v => v > 0);
+  const linhasGrupo = coletarResultadosPorGrupo();
+  const linhasAlunos = coletarResultados();
+  const medias = linhasGrupo.map(l => l.media).filter(v => v > 0);
 
   const campoMedia = document.getElementById("mediaGeral");
   const campoMediana = document.getElementById("medianaGeral");
@@ -386,9 +417,9 @@ window.updateAnalytics = function() {
   const notasCarmem = [];
   const notasClaudia = [];
 
-  linhas.forEach(linha => {
+  linhasGrupo.forEach(linha => {
     if (linha.avaliadora === "carmem") {
-      const par = linhas.find(item =>
+      const par = linhasGrupo.find(item =>
         item.semana === linha.semana &&
         item.turma === linha.turma &&
         item.grupo === linha.grupo &&
@@ -407,8 +438,8 @@ window.updateAnalytics = function() {
     campoCorrelacao.textContent = correlacaoPearson(notasCarmem, notasClaudia).toFixed(2);
   }
 
-  renderTabelaResultados(linhas);
-  renderGrafico(linhas);
+  renderTabelaResultados(linhasAlunos);
+  renderGrafico(linhasGrupo);
 };
 
 /* ==============================
@@ -425,7 +456,7 @@ function renderTabelaResultados(linhas) {
       <th>Semana</th>
       <th>Turma</th>
       <th>Grupo</th>
-      <th>Alunos</th>
+      <th>Aluno</th>
       <th>Critério</th>
       <th>Avaliadora</th>
       <th>Nota</th>
@@ -441,7 +472,7 @@ function renderTabelaResultados(linhas) {
       <td>${escapeHtml(l.semanaTitulo)}</td>
       <td>${escapeHtml(l.turmaTitulo)}</td>
       <td>${escapeHtml(l.grupoTitulo)}</td>
-      <td>${escapeHtml(l.alunos)}</td>
+      <td>${escapeHtml(l.aluno)}</td>
       <td>${escapeHtml(l.criterioTexto)}</td>
       <td>${escapeHtml(l.avaliadoraNome)}</td>
       <td>${escapeHtml(l.nota.toFixed(2))}</td>
@@ -456,10 +487,10 @@ window.mostrarDetalhesAlunos = function() {
 };
 
 window.mostrarResumoGrupos = function() {
-  const linhas = coletarResultados();
+  const linhasGrupo = coletarResultadosPorGrupo();
   const mapa = {};
 
-  linhas.forEach(l => {
+  linhasGrupo.forEach(l => {
     const id = `${l.semana}_${l.turma}_${l.grupo}`;
 
     if (!mapa[id]) {
@@ -467,7 +498,7 @@ window.mostrarResumoGrupos = function() {
         semanaTitulo: l.semanaTitulo,
         turmaTitulo: l.turmaTitulo,
         grupoTitulo: l.grupoTitulo,
-        alunos: l.alunos,
+        alunos: alunosGrupo(l.semana, l.turma, l.grupo),
         notas: []
       };
     }
@@ -490,7 +521,7 @@ window.mostrarResumoGrupos = function() {
       <th>Semana</th>
       <th>Turma</th>
       <th>Grupo</th>
-      <th>Alunos</th>
+      <th>Aluno</th>
       <th>Média</th>
       <th>Total lançado</th>
     </tr>
@@ -499,18 +530,20 @@ window.mostrarResumoGrupos = function() {
   tbody.innerHTML = "";
 
   resumo.forEach(r => {
-    const tr = document.createElement("tr");
+    r.alunos.forEach(aluno => {
+      const tr = document.createElement("tr");
 
-    tr.innerHTML = `
-      <td>${escapeHtml(r.semanaTitulo)}</td>
-      <td>${escapeHtml(r.turmaTitulo)}</td>
-      <td>${escapeHtml(r.grupoTitulo)}</td>
-      <td>${escapeHtml(r.alunos)}</td>
-      <td>${escapeHtml(r.media.toFixed(2))}</td>
-      <td>${escapeHtml(r.total.toFixed(2))}</td>
-    `;
+      tr.innerHTML = `
+        <td>${escapeHtml(r.semanaTitulo)}</td>
+        <td>${escapeHtml(r.turmaTitulo)}</td>
+        <td>${escapeHtml(r.grupoTitulo)}</td>
+        <td>${escapeHtml(aluno)}</td>
+        <td>${escapeHtml(r.media.toFixed(2))}</td>
+        <td>${escapeHtml(r.total.toFixed(2))}</td>
+      `;
 
-    tbody.appendChild(tr);
+      tbody.appendChild(tr);
+    });
   });
 };
 
@@ -565,7 +598,7 @@ window.exportarAvaliacaoJSON = function() {
     semana: item.semanaTitulo,
     turma: item.turmaTitulo,
     grupo: item.grupoTitulo,
-    alunos: item.alunos,
+    aluno: item.aluno,
     criterio: item.criterioTexto,
     avaliadora: item.avaliadoraNome,
     nota: item.nota
@@ -579,7 +612,7 @@ window.exportarAvaliacaoJSON = function() {
   const a = document.createElement("a");
 
   a.href = url;
-  a.download = "avaliacao_anatomia_para_importar.json";
+  a.download = "avaliacao_anatomia_alunos_individualizados.json";
   a.click();
 
   URL.revokeObjectURL(url);
@@ -592,7 +625,7 @@ window.exportCSV = function() {
     "Semana",
     "Turma",
     "Grupo",
-    "Alunos",
+    "Aluno",
     "Critério",
     "Avaliadora",
     "Nota"
@@ -604,7 +637,7 @@ window.exportCSV = function() {
       l.semanaTitulo,
       l.turmaTitulo,
       l.grupoTitulo,
-      l.alunos,
+      l.aluno,
       l.criterioTexto,
       l.avaliadoraNome,
       l.nota.toFixed(2).replace(".", ",")
@@ -619,7 +652,7 @@ window.exportCSV = function() {
   const a = document.createElement("a");
 
   a.href = url;
-  a.download = "avaliacao_anatomia_com_alunos.csv";
+  a.download = "avaliacao_anatomia_alunos_individualizados.csv";
   a.click();
 
   URL.revokeObjectURL(url);

@@ -147,7 +147,13 @@ function nomeTurma(semanaId, turmaId) {
 }
 
 function nomeGrupo(semanaId, turmaId, grupoId) {
-  return SEMANAS[semanaId]?.turmas?.[turmaId]?.grupos?.[grupoId.replace("G", "")]?.titulo || grupoId;
+  return SEMANAS[semanaId]?.turmas?.[turmaId]?.grupos?.[String(grupoId).replace("G", "")]?.titulo || grupoId;
+}
+
+function alunosGrupo(semanaId, turmaId, grupoId) {
+  const id = String(grupoId).replace("G", "");
+  const alunos = SEMANAS[semanaId]?.turmas?.[turmaId]?.grupos?.[id]?.alunos || [];
+  return alunos.join(", ");
 }
 
 /* ==============================
@@ -340,12 +346,14 @@ function coletarResultados() {
     const criterioTexto = CRITERIOS_GERAIS[info.criterioIndex] || `Critério ${info.criterioIndex + 1}`;
 
     resultados.push({
+      chave,
       semana: info.semana,
       semanaTitulo: nomeSemana(info.semana),
       turma: info.turma,
       turmaTitulo: nomeTurma(info.semana, info.turma),
       grupo: info.grupo,
       grupoTitulo: nomeGrupo(info.semana, info.turma, info.grupo),
+      alunos: alunosGrupo(info.semana, info.turma, info.grupo),
       criterio: info.criterioIndex,
       criterioTexto,
       avaliadora: info.avaliadora,
@@ -417,6 +425,7 @@ function renderTabelaResultados(linhas) {
       <th>Semana</th>
       <th>Turma</th>
       <th>Grupo</th>
+      <th>Alunos</th>
       <th>Critério</th>
       <th>Avaliadora</th>
       <th>Nota</th>
@@ -432,6 +441,7 @@ function renderTabelaResultados(linhas) {
       <td>${escapeHtml(l.semanaTitulo)}</td>
       <td>${escapeHtml(l.turmaTitulo)}</td>
       <td>${escapeHtml(l.grupoTitulo)}</td>
+      <td>${escapeHtml(l.alunos)}</td>
       <td>${escapeHtml(l.criterioTexto)}</td>
       <td>${escapeHtml(l.avaliadoraNome)}</td>
       <td>${escapeHtml(l.nota.toFixed(2))}</td>
@@ -457,6 +467,7 @@ window.mostrarResumoGrupos = function() {
         semanaTitulo: l.semanaTitulo,
         turmaTitulo: l.turmaTitulo,
         grupoTitulo: l.grupoTitulo,
+        alunos: l.alunos,
         notas: []
       };
     }
@@ -479,6 +490,7 @@ window.mostrarResumoGrupos = function() {
       <th>Semana</th>
       <th>Turma</th>
       <th>Grupo</th>
+      <th>Alunos</th>
       <th>Média</th>
       <th>Total lançado</th>
     </tr>
@@ -493,6 +505,7 @@ window.mostrarResumoGrupos = function() {
       <td>${escapeHtml(r.semanaTitulo)}</td>
       <td>${escapeHtml(r.turmaTitulo)}</td>
       <td>${escapeHtml(r.grupoTitulo)}</td>
+      <td>${escapeHtml(r.alunos)}</td>
       <td>${escapeHtml(r.media.toFixed(2))}</td>
       <td>${escapeHtml(r.total.toFixed(2))}</td>
     `;
@@ -541,9 +554,18 @@ function renderGrafico(linhas) {
 
 window.exportarAvaliacaoJSON = function() {
   const dadosExportados = coletarResultados().map(item => ({
+    chave: item.chave,
+
+    semanaId: item.semana,
+    turmaId: item.turma,
+    grupoId: item.grupo,
+    criterioIndex: item.criterio,
+    avaliadoraCodigo: item.avaliadora,
+
     semana: item.semanaTitulo,
     turma: item.turmaTitulo,
     grupo: item.grupoTitulo,
+    alunos: item.alunos,
     criterio: item.criterioTexto,
     avaliadora: item.avaliadoraNome,
     nota: item.nota
@@ -557,7 +579,7 @@ window.exportarAvaliacaoJSON = function() {
   const a = document.createElement("a");
 
   a.href = url;
-  a.download = "avaliacao_anatomia_completa.json";
+  a.download = "avaliacao_anatomia_para_importar.json";
   a.click();
 
   URL.revokeObjectURL(url);
@@ -570,6 +592,7 @@ window.exportCSV = function() {
     "Semana",
     "Turma",
     "Grupo",
+    "Alunos",
     "Critério",
     "Avaliadora",
     "Nota"
@@ -581,6 +604,7 @@ window.exportCSV = function() {
       l.semanaTitulo,
       l.turmaTitulo,
       l.grupoTitulo,
+      l.alunos,
       l.criterioTexto,
       l.avaliadoraNome,
       l.nota.toFixed(2).replace(".", ",")
@@ -595,7 +619,7 @@ window.exportCSV = function() {
   const a = document.createElement("a");
 
   a.href = url;
-  a.download = "avaliacao_anatomia.csv";
+  a.download = "avaliacao_anatomia_com_alunos.csv";
   a.click();
 
   URL.revokeObjectURL(url);
@@ -649,17 +673,58 @@ window.importarAvaliacaoJSON = function(event) {
       const dados = JSON.parse(e.target.result);
 
       if (Array.isArray(dados)) {
-        alert("Este JSON é um relatório exportado. Para restaurar notas editáveis, importe o arquivo original de backup do state.");
+        dados.forEach(item => {
+          const nota = normalizarNota(item.nota);
+
+          if (nota === "") return;
+
+          if (item.chave) {
+            state[item.chave] = nota;
+            return;
+          }
+
+          if (
+            item.semanaId &&
+            item.turmaId &&
+            item.grupoId &&
+            item.criterioIndex !== undefined &&
+            item.avaliadoraCodigo
+          ) {
+            const chave = key(
+              item.semanaId,
+              item.turmaId,
+              String(item.grupoId).replace("G", ""),
+              item.criterioIndex,
+              item.avaliadoraCodigo
+            );
+
+            state[chave] = nota;
+          }
+        });
+
+        salvar();
+        updateAnalytics();
+
+        alert("Notas importadas e juntadas com as suas com sucesso.");
         return;
       }
 
-      state = dados;
-      salvar();
+      Object.entries(dados).forEach(([chave, valor]) => {
+        const nota = normalizarNota(valor);
 
-      alert("Avaliação importada com sucesso.");
+        if (nota === "") {
+          delete state[chave];
+        } else {
+          state[chave] = nota;
+        }
+      });
+
+      salvar();
       updateAnalytics();
+
+      alert("Avaliação importada e juntada com sucesso.");
     } catch {
-      alert("Erro ao importar. Verifique se o arquivo é um JSON válido exportado pelo app.");
+      alert("Erro ao importar. Verifique se o arquivo é um JSON válido.");
     }
   };
 

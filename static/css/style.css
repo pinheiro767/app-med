@@ -69,13 +69,6 @@ h2,h3{
   box-shadow:0 18px 45px rgba(0,0,0,.28);
 }
 
-.cards-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  gap:16px;
-  margin-top:18px;
-}
-
 .card{
   background:linear-gradient(145deg,#111827,#1e293b);
   border:1px solid var(--line);
@@ -86,6 +79,13 @@ h2,h3{
 
 .card h3{
   color:var(--gold);
+}
+
+.cards-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:16px;
+  margin-top:18px;
 }
 
 .badge{
@@ -134,7 +134,17 @@ button.secondary{
   border:1px solid var(--line);
 }
 
-input, textarea, select{
+.button-group{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  margin:12px 0;
+}
+
+input,
+textarea,
+select{
   width:100%;
   border-radius:12px;
   border:1px solid var(--line);
@@ -144,15 +154,58 @@ input, textarea, select{
   margin-top:6px;
 }
 
+textarea{
+  resize:vertical;
+  min-height:70px;
+}
+
 label{
   display:block;
   margin-top:12px;
   color:#dbeafe;
 }
 
+.import-label,
+.file-label{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  background:linear-gradient(180deg,#fde68a,#facc15);
+  color:#111827;
+  font-weight:800;
+  border-radius:14px;
+  padding:12px 16px;
+  margin:4px;
+}
+
+.import-label input,
+.file-label input{
+  display:none;
+}
+
+.accordion{
+  background:#020617;
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px;
+  margin:16px 0;
+}
+
+.accordion summary{
+  cursor:pointer;
+  font-weight:900;
+  color:var(--gold);
+  font-size:1.05rem;
+}
+
+.accordion[open] summary{
+  margin-bottom:14px;
+}
+
 .evaluation-grid{
   display:grid;
-  grid-template-columns:1.5fr 1fr 1fr 1fr;
+  grid-template-columns:1.5fr 1fr 1.6fr;
   gap:10px;
   align-items:end;
   padding:12px 0;
@@ -161,6 +214,13 @@ label{
 
 .evaluation-grid strong{
   color:var(--gold);
+}
+
+.export-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:16px;
 }
 
 .prof-title{
@@ -212,9 +272,11 @@ label{
   margin-top:18px;
 }
 
-.table-wrap{
+.table-wrap,
+.results-table{
   overflow:auto;
   margin-top:18px;
+  max-height:420px;
 }
 
 table{
@@ -222,7 +284,8 @@ table{
   border-collapse:collapse;
 }
 
-th,td{
+th,
+td{
   padding:12px;
   border-bottom:1px solid var(--line);
   text-align:left;
@@ -246,6 +309,7 @@ th{
   border:1px solid var(--line);
   border-radius:16px;
   padding:10px;
+  cursor:pointer;
 }
 
 .gallery img{
@@ -272,198 +336,6 @@ th{
 
 .question-box strong{
   color:var(--gold);
-}
-
-@media(max-width:760px){
-  .evaluation-grid{
-    grid-template-columns:1fr;
-  }
-
-  .hero{
-    padding:30px 18px;
-  }
-
-  .panel{
-    padding:16px;
-  }
-}
-/* ===============================
-   MODAL DE ZOOM DAS IMAGENS
-================================ */
-
-.gallery figure{
-  cursor:pointer;
-}
-
-#imageModal{
-  position:fixed;
-  inset:0;
-  z-index:9999;
-}
-
-.modal-bg{
-  position:absolute;
-  inset:0;
-  background:rgba(0,0,0,0.92);
-}
-
-.modal-content{
-  position:absolute;
-  inset:20px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-}
-
-.modal-img{
-  max-width:92vw;
-  max-height:78vh;
-  object-fit:contain;
-  border-radius:14px;
-  box-shadow:0 0 45px rgba(0,0,0,.9);
-  transition:transform .2s ease;
-  background:#020617;
-}
-
-.modal-caption{
-  margin-top:12px;
-  color:#e5e7eb;
-  font-weight:700;
-  text-align:center;
-}
-
-.modal-close{
-  position:absolute;
-  top:12px;
-  right:12px;
-  width:46px;
-  height:46px;
-  border-radius:50%;
-  font-size:28px;
-  line-height:1;
-  padding:0;
-  z-index:10;
-}
-
-.zoom-toolbar{
-  position:absolute;
-  top:12px;
-  left:12px;
-  display:flex;
-  gap:8px;
-  z-index:10;
-}
-
-.zoom-toolbar button{
-  padding:10px 14px;
-}
-
-@media(max-width:760px){
-  .modal-content{
-    inset:10px;
-  }
-
-  .modal-img{
-    max-width:95vw;
-    max-height:72vh;
-  }
-
-  .zoom-toolbar{
-    top:auto;
-    bottom:18px;
-    left:50%;
-    transform:translateX(-50%);
-  }
-
-  .modal-caption{
-    margin-bottom:70px;
-  }
-}
-.gallery figure{
-  cursor:pointer;
-}
-
-#imageModal{
-  position:fixed;
-  inset:0;
-  z-index:99999;
-}
-
-.modal-bg{
-  position:absolute;
-  inset:0;
-  background:rgba(0,0,0,.94);
-}
-
-.modal-content{
-  position:absolute;
-  inset:20px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-}
-
-.modal-img{
-  max-width:96vw;
-  max-height:84vh;
-  object-fit:contain;
-  border-radius:14px;
-  background:#020617;
-  box-shadow:0 0 50px rgba(0,0,0,.9);
-}
-
-.modal-caption{
-  color:white;
-  font-weight:bold;
-  margin-top:12px;
-}
-
-.modal-close{
-  position:absolute;
-  top:10px;
-  right:10px;
-  z-index:100000;
-  width:46px;
-  height:46px;
-  border-radius:50%;
-  font-size:28px;
-}
-.accordion{
-  background:#020617;
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:14px;
-  margin:16px 0;
-}
-
-.accordion summary{
-  cursor:pointer;
-  font-weight:900;
-  color:var(--gold);
-  font-size:1.05rem;
-}
-
-.accordion[open] summary{
-  margin-bottom:14px;
-}
-
-.file-label{
-  display:block;
-  background:#111827;
-  border:1px dashed var(--gold);
-  border-radius:16px;
-  padding:16px;
-  cursor:pointer;
-  color:var(--gold);
-  font-weight:800;
-  margin:14px 0;
-}
-
-.file-label input{
-  margin-top:10px;
 }
 
 .file-list{
@@ -498,9 +370,7 @@ th{
   margin-right:10px;
 }
 
-.gallery figure{
-  cursor:pointer;
-}
+/* MODAL DAS IMAGENS */
 
 #imageModal{
   position:fixed;
@@ -521,6 +391,7 @@ th{
   flex-direction:column;
   align-items:center;
   justify-content:center;
+  overflow:hidden;
 }
 
 .modal-img{
@@ -531,12 +402,14 @@ th{
   background:#020617;
   box-shadow:0 0 50px rgba(0,0,0,.9);
   transition:transform .2s ease;
+  transform-origin:center center;
 }
 
 .modal-caption{
   color:white;
   font-weight:bold;
   margin-top:12px;
+  text-align:center;
 }
 
 .modal-close{
@@ -548,6 +421,10 @@ th{
   height:46px;
   border-radius:50%;
   font-size:28px;
+  line-height:1;
+  padding:0;
+  background:var(--red);
+  color:white;
 }
 
 .zoom-toolbar{
@@ -563,7 +440,34 @@ th{
   padding:10px 14px;
 }
 
+/* CELULAR */
+
 @media(max-width:760px){
+  .hero{
+    padding:30px 18px;
+  }
+
+  .panel{
+    padding:16px;
+  }
+
+  .evaluation-grid{
+    grid-template-columns:1fr;
+  }
+
+  .chart-wrap{
+    height:300px;
+  }
+
+  .modal-content{
+    inset:10px;
+  }
+
+  .modal-img{
+    max-width:95vw;
+    max-height:72vh;
+  }
+
   .zoom-toolbar{
     top:auto;
     bottom:16px;
@@ -571,115 +475,13 @@ th{
     transform:translateX(-50%);
   }
 
-  .modal-img{
-    max-height:72vh;
+  .modal-caption{
+    margin-bottom:70px;
   }
-}
-.results-table{
-  max-height:420px;
-  overflow:auto;
-  margin-top:12px;
-}
 
-.results-table table{
-  font-size:0.85rem;
-}
-
-.accordion summary{
-  cursor:pointer;
-  font-weight:900;
-  font-size:1.1rem;
-}
-.import-label{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:14px;
-  padding:12px 16px;
-  background:linear-gradient(180deg,#fde68a,#facc15);
-  color:#111827;
-  font-weight:800;
-  cursor:pointer;
-  margin:4px;
-}
-
-.import-label input{
-  display:none;
-}
-#imageModal{
-  position:fixed;
-  inset:0;
-  z-index:9999;
-}
-
-.modal-bg{
-  position:absolute;
-  inset:0;
-  background:rgba(0,0,0,.82);
-}
-
-.modal-content{
-  position:relative;
-  z-index:2;
-  width:min(94vw,1100px);
-  height:90vh;
-  margin:5vh auto;
-  background:#0f172a;
-  border-radius:18px;
-  padding:18px;
-  overflow:auto;
-  text-align:center;
-}
-
-.modal-img{
-  max-width:100%;
-  max-height:72vh;
-  object-fit:contain;
-  transition:transform .2s ease;
-  transform-origin:center center;
-}
-
-.modal-close{
-  position:absolute;
-  right:16px;
-  top:12px;
-  font-size:28px;
-  border:none;
-  background:#ef4444;
-  color:white;
-  border-radius:50%;
-  width:42px;
-  height:42px;
-  cursor:pointer;
-}
-
-.zoom-toolbar{
-  margin-bottom:12px;
-}
-
-.zoom-toolbar button{
-  margin:4px;
-}
-
-.modal-caption{
-  color:white;
-  font-weight:700;
-}
-.import-label,
-.file-label {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  background: #facc15;
-  color: #111827;
-  font-weight: 800;
-  border-radius: 18px;
-  padding: 14px 20px;
-  margin: 6px;
-}
-
-.import-label input,
-.file-label input {
-  display: none;
+  th,
+  td{
+    font-size:.85rem;
+    padding:9px;
+  }
 }

@@ -337,14 +337,19 @@ async function salvarNotaSupabase(chave, valor) {
 ================================*/
 
 window.salvarNota = function(chave, valor, input = null) {
+  if (valor === "" || valor === null || valor === undefined) {
+    delete state[chave];
+    salvar();
+    updateAnalytics();
+    return;
+  }
+
   const nota = normalizarNota(valor);
 
   if (nota === "") {
     delete state[chave];
-    if (input) input.value = "";
   } else {
     state[chave] = nota;
-    if (input) input.value = nota.toFixed(2);
   }
 
   salvar();
@@ -358,14 +363,19 @@ window.salvarCampo = function(chave, valor) {
 };
 
 window.salvarNotaIndividual = function(chave, valor, input = null) {
+window.salvarNotaIndividual = function(chave, valor, input = null) {
+  if (valor === "" || valor === null || valor === undefined) {
+    delete state[chave];
+    salvar();
+    return;
+  }
+
   const nota = normalizarNotaIndividual(valor);
 
   if (nota === "") {
     delete state[chave];
-    if (input) input.value = "";
   } else {
     state[chave] = nota;
-    if (input) input.value = nota.toFixed(2);
   }
 
   salvar();

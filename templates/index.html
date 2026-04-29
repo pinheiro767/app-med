@@ -27,8 +27,9 @@
     <h1>Avaliação de Anatomia</h1>
 
     <p>
-      PWA para avaliação de atividades práticas, registro fotográfico,
-      cálculo de notas, estatística, gráficos e exportação dos resultados.
+      PWA para avaliação prática em grupo, avaliação individual dos alunos,
+      comentários do avaliador, registro fotográfico, simulados, estatísticas
+      e exportação em PDF, CSV e JSON.
     </p>
 
     <button id="installAppBtn" type="button" style="display:none;">
@@ -44,30 +45,42 @@
 
     <p>
       Selecione a semana, turma e grupo para visualizar o conteúdo,
-      os alunos responsáveis e preencher a avaliação.
+      os alunos responsáveis, imagens, critérios e campos de avaliação.
     </p>
 
     <div id="weekCards" class="cards-grid"></div>
   </section>
 
   <section class="panel">
-    <h2>Avaliação</h2>
+    <h2>Avaliação prática</h2>
 
     <p>
-      Cada critério vale de <strong>0 até 0,10</strong>.
-      Utilize a barra deslizante por quesito para lançar as notas.
+      Cada critério coletivo vale de <strong>0 até 0,10</strong>.
+      A avaliação individual dentro do grupo pode ser registrada separadamente,
+      sem apagar a avaliação coletiva.
     </p>
 
     <div id="evaluationArea"></div>
   </section>
 
   <section class="panel">
+    <h2>Provas e simulados</h2>
+
+    <p>
+      Cadastre alunos, informe a quantidade de acertos, o total de questões
+      e a nota máxima. O sistema calcula automaticamente a nota final.
+    </p>
+
+    <div id="simuladosArea"></div>
+  </section>
+
+  <section class="panel">
     <details class="accordion">
-      <summary>Registro fotográfico da aula</summary>
+      <summary>Registro fotográfico geral da aula</summary>
 
       <p>
-        Tire fotos ou anexe imagens dos modelos físicos.
-        As imagens ficam salvas no aparelho.
+        Esta área é para fotos gerais da aula. As fotos específicas de cada grupo
+        aparecem dentro da própria avaliação do grupo.
       </p>
 
       <div class="button-group">
@@ -92,20 +105,20 @@
         </label>
 
         <button type="button" onclick="listarFotosIndexedDB('registro-geral')">
-          Mostrar fotos
+          Mostrar fotos gerais
         </button>
 
         <button type="button" onclick="limparFotosIndexedDB('registro-geral')">
-          Limpar fotos
+          Limpar fotos gerais
         </button>
       </div>
 
-      <div id="fotosIndexedDB" class="gallery"></div>
+      <div id="fotosGeraisIndexedDB" class="gallery"></div>
     </details>
   </section>
 
   <section class="panel">
-    <h2>Estatística, gráficos e exportação</h2>
+    <h2>Estatística, gráficos e exportação geral</h2>
 
     <div class="button-group">
       <button type="button" onclick="updateAnalytics()">
@@ -113,11 +126,11 @@
       </button>
 
       <button type="button" onclick="exportCSV()">
-        Exportar CSV
+        Exportar CSV geral
       </button>
 
       <button type="button" onclick="gerarPDF()">
-        Gerar PDF
+        Gerar PDF geral
       </button>
 
       <button type="button" onclick="exportarAvaliacaoJSON()">
@@ -180,6 +193,8 @@
               <th>Semana</th>
               <th>Turma</th>
               <th>Grupo</th>
+              <th>Aluno</th>
+              <th>Critério</th>
               <th>Avaliadora</th>
               <th>Nota</th>
             </tr>

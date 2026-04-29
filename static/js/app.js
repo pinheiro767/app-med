@@ -19,6 +19,10 @@ function key(semana, turma, grupo, criterio, avaliadora) {
   return `${semana}_${turma}_G${grupo}_C${criterio}_${avaliadora}`;
 }
 
+function chaveEhNotaCriterio(chave) {
+  return /^semana\d+_[^_]+_G\d+_C\d+_(carmem|claudia)$/.test(chave);
+}
+
 function interpretarChave(chave) {
   const partes = chave.split("_");
   return {
@@ -31,7 +35,7 @@ function interpretarChave(chave) {
 }
 
 function numero(valor) {
-  const n = Number(valor);
+  const n = Number(String(valor).replace(",", "."));
   return Number.isFinite(n) ? n : 0;
 }
 
@@ -43,6 +47,18 @@ function normalizarNota(valor) {
   if (!Number.isFinite(n)) return "";
   if (n < 0) n = 0;
   if (n > 0.1) n = 0.1;
+
+  return Number(n.toFixed(2));
+}
+
+function normalizarNotaIndividual(valor) {
+  if (valor === "" || valor === null || valor === undefined) return "";
+
+  let n = Number(String(valor).replace(",", "."));
+
+  if (!Number.isFinite(n)) return "";
+  if (n < 0) n = 0;
+  if (n > 1) n = 1;
 
   return Number(n.toFixed(2));
 }
@@ -220,23 +236,32 @@ window.listarFotosIndexedDB = async function(grupo) {
 
     galeria.innerHTML = "";
 
-    request.result
-      .filter(foto => foto.grupo === grupo)
-      .forEach(foto => {
-        const url = URL.createObjectURL(foto.arquivo);
+    const fotos = request.result.filter(foto => foto.grupo === grupo);
 
-        const figure = document.createElement("figure");
-        figure.innerHTML = `
-          <img src="${url}" alt="${escapeHtml(foto.nome)}">
-          <figcaption>${escapeHtml(foto.nome)}</figcaption>
-        `;
+    if (!fotos.length) {
+      galeria.innerHTML = `<p>Nenhuma foto anexada ainda para este grupo.</p>`;
+      return;
+    }
 
-        galeria.appendChild(figure);
-      });
+    fotos.forEach(foto => {
+      const url = URL.createObjectURL(foto.arquivo);
+
+      const figure = document.createElement("figure");
+      figure.className = "image-card";
+      figure.innerHTML = `
+        <img src="${url}" alt="${escapeHtml(foto.nome)}">
+        <figcaption>${escapeHtml(foto.nome)}</figcaption>
+      `;
+
+      galeria.appendChild(figure);
+    });
   };
 };
 
 window.limparFotosIndexedDB = async function(grupo) {
+  const confirmar = confirm("Tem certeza que deseja remover as fotos anexadas deste grupo?");
+  if (!confirmar) return;
+
   const db = await abrirBancoFotos();
   const tx = db.transaction(FOTO_STORE, "readwrite");
   const store = tx.objectStore(FOTO_STORE);
@@ -261,6 +286,7 @@ window.limparFotosIndexedDB = async function(grupo) {
 async function salvarNotaSupabase(chave, valor) {
   const nota = normalizarNota(valor);
   if (nota === "") return;
+  if (!chaveEhNotaCriterio(chave)) return;
 
   const dados = interpretarChave(chave);
   const criterio = CRITERIOS_GERAIS[dados.criterioIndex] || `Critério ${dados.criterioIndex + 1}`;
@@ -309,7 +335,7 @@ async function salvarNotaSupabase(chave, valor) {
 }
 
 /* ==============================
-   SALVAR NOTAS
+   SALVAR NOTAS E CAMPOS
 ================================*/
 
 window.salvarNota = function(chave, valor, input = null) {
@@ -328,6 +354,34 @@ window.salvarNota = function(chave, valor, input = null) {
   updateAnalytics();
 };
 
+window.salvarCampo = function(chave, valor) {
+  state[chave] = valor;
+  salvar();
+};
+
+window.salvarNotaIndividual = function(chave, valor, input = null) {
+  const nota = normalizarNotaIndividual(valor);
+
+  if (nota === "") {
+    delete state[chave];
+    if (input) input.value = "";
+  } else {
+    state[chave] = nota;
+    if (input) input.value = nota.toFixed(2);
+  }
+
+  salvar();
+};
+
+window.carregarComentarioGrupo = function(semanaId, turmaId, grupoId) {
+  return state[`${semanaId}_${turmaId}_G${grupoId}_comentarioGrupo`] || "";
+};
+
+window.salvarComentarioGrupo = function(semanaId, turmaId, grupoId, valor) {
+  state[`${semanaId}_${turmaId}_G${grupoId}_comentarioGrupo`] = valor;
+  salvar();
+};
+
 /* ==============================
    RESULTADOS
 ================================*/
@@ -336,8 +390,7 @@ function coletarResultados() {
   const resultados = [];
 
   Object.entries(state).forEach(([chave, valor]) => {
-    if (!chave.includes("_G")) return;
-    if (chave.startsWith("uploads_")) return;
+    if (!chaveEhNotaCriterio(chave)) return;
 
     const info = interpretarChave(chave);
     const criterioTexto = CRITERIOS_GERAIS[info.criterioIndex] || `Critério ${info.criterioIndex + 1}`;
@@ -370,8 +423,7 @@ function coletarResultadosPorGrupo() {
   const resultados = [];
 
   Object.entries(state).forEach(([chave, valor]) => {
-    if (!chave.includes("_G")) return;
-    if (chave.startsWith("uploads_")) return;
+    if (!chaveEhNotaCriterio(chave)) return;
 
     const info = interpretarChave(chave);
     const criterioTexto = CRITERIOS_GERAIS[info.criterioIndex] || `Critério ${info.criterioIndex + 1}`;
@@ -582,19 +634,17 @@ function renderGrafico(linhas) {
 }
 
 /* ==============================
-   EXPORTAÇÕES
+   EXPORTAÇÕES GERAIS
 ================================*/
 
 window.exportarAvaliacaoJSON = function() {
   const dadosExportados = coletarResultados().map(item => ({
     chave: item.chave,
-
     semanaId: item.semana,
     turmaId: item.turma,
     grupoId: item.grupo,
     criterioIndex: item.criterio,
     avaliadoraCodigo: item.avaliadora,
-
     semana: item.semanaTitulo,
     turma: item.turmaTitulo,
     grupo: item.grupoTitulo,
@@ -666,7 +716,7 @@ window.gerarPDF = async function() {
     return;
   }
 
-  const canvas = await html2canvas(area, { scale: 2 });
+  const canvas = await html2canvas(area, { scale: 2, useCORS: true });
   const imgData = canvas.toDataURL("image/png");
 
   const pdf = new window.jspdf.jsPDF("p", "mm", "a4");
@@ -692,6 +742,93 @@ window.gerarPDF = async function() {
 };
 
 /* ==============================
+   EXPORTAÇÃO POR GRUPO
+================================*/
+
+window.exportarGrupoCSV = function(semanaId, turmaId, grupoId) {
+  const grupo = SEMANAS[semanaId].turmas[turmaId].grupos[grupoId];
+  if (!grupo) return;
+
+  const linhas = [];
+
+  linhas.push([
+    "Semana",
+    "Turma",
+    "Grupo",
+    "Aluno",
+    "Nota individual",
+    "Comentário individual",
+    "Comentário geral do grupo"
+  ]);
+
+  const comentarioGrupo = carregarComentarioGrupo(semanaId, turmaId, grupoId);
+
+  grupo.alunos.forEach((aluno, index) => {
+    const base = `${semanaId}_${turmaId}_G${grupoId}_A${index}`;
+
+    linhas.push([
+      SEMANAS[semanaId].titulo,
+      SEMANAS[semanaId].turmas[turmaId].titulo,
+      grupo.titulo,
+      aluno,
+      state[`${base}_notaIndividual`] || "",
+      state[`${base}_comentarioIndividual`] || "",
+      comentarioGrupo
+    ]);
+  });
+
+  const csv = linhas
+    .map(linha => linha.map(campo => `"${String(campo).replaceAll('"', '""')}"`).join(";"))
+    .join("\n");
+
+  const blob = new Blob(["\ufeff" + csv], {
+    type: "text/csv;charset=utf-8;"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = `grupo_${grupoId}_${semanaId}_${turmaId}.csv`;
+  a.click();
+
+  URL.revokeObjectURL(url);
+};
+
+window.gerarPDFGrupoAtual = async function() {
+  const area = document.getElementById("relatorioGrupoAtual");
+
+  if (!area || !window.jspdf || !window.html2canvas) {
+    alert("Não foi possível gerar PDF. Verifique se jsPDF e html2canvas carregaram.");
+    return;
+  }
+
+  const canvas = await html2canvas(area, { scale: 2, useCORS: true });
+  const imgData = canvas.toDataURL("image/png");
+
+  const pdf = new window.jspdf.jsPDF("p", "mm", "a4");
+  const pageWidth = 210;
+  const pageHeight = 297;
+  const imgWidth = pageWidth;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  let heightLeft = imgHeight;
+  let position = 0;
+
+  pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+  heightLeft -= pageHeight;
+
+  while (heightLeft > 0) {
+    position = heightLeft - imgHeight;
+    pdf.addPage();
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+  }
+
+  pdf.save("relatorio_grupo_com_fotos.pdf");
+};
+
+/* ==============================
    IMPORTAÇÃO JSON
 ================================*/
 
@@ -711,7 +848,7 @@ window.importarAvaliacaoJSON = function(event) {
 
           if (nota === "") return;
 
-          if (item.chave) {
+          if (item.chave && chaveEhNotaCriterio(item.chave)) {
             state[item.chave] = nota;
             return;
           }
@@ -743,6 +880,8 @@ window.importarAvaliacaoJSON = function(event) {
       }
 
       Object.entries(dados).forEach(([chave, valor]) => {
+        if (!chaveEhNotaCriterio(chave)) return;
+
         const nota = normalizarNota(valor);
 
         if (nota === "") {
@@ -867,8 +1006,10 @@ window.abrirGrupo = function(semanaId, turmaId, grupoId) {
   const area = document.getElementById("evaluationArea");
   if (!area) return;
 
+  const fotoKey = `${semanaId}_${turmaId}_G${grupoId}`;
+
   area.innerHTML = `
-    <div class="card">
+    <div class="card" id="relatorioGrupoAtual">
       <span class="badge">${escapeHtml(SEMANAS[semanaId].titulo)}</span>
       <h2>${escapeHtml(grupo.titulo)}</h2>
       <p><strong>${escapeHtml(SEMANAS[semanaId].turmas[turmaId].titulo)}</strong></p>
@@ -902,7 +1043,7 @@ window.abrirGrupo = function(semanaId, turmaId, grupoId) {
       ${grupo.imagens ? renderGaleriaGrupo4(grupo.imagens) : ""}
 
       <details class="accordion" open>
-        <summary>Avaliação</summary>
+        <summary>Avaliação do grupo</summary>
 
         <p>
           Cada critério vale de <strong>0 até 0,1</strong>.
@@ -933,10 +1074,83 @@ window.abrirGrupo = function(semanaId, turmaId, grupoId) {
             </div>
           `;
         }).join("")}
+
+        <label>
+          Comentário geral do avaliador sobre o grupo
+          <textarea
+            rows="4"
+            oninput="salvarComentarioGrupo('${semanaId}', '${turmaId}', '${grupoId}', this.value)"
+          >${escapeHtml(carregarComentarioGrupo(semanaId, turmaId, grupoId))}</textarea>
+        </label>
       </details>
+
+      <details class="accordion" open>
+        <summary>Avaliação individual dos alunos dentro do grupo</summary>
+
+        <p>
+          Esta seção não altera os critérios coletivos. Ela registra nota individual, participação e comentário por aluno.
+        </p>
+
+        ${grupo.alunos.map((aluno, index) => {
+          const base = `${semanaId}_${turmaId}_G${grupoId}_A${index}`;
+          return `
+            <div class="evaluation-grid">
+              <strong>${escapeHtml(aluno)}</strong>
+
+              <label>
+                Nota individual
+                <input
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value="${escapeHtml(state[`${base}_notaIndividual`] ?? "")}"
+                  oninput="salvarNotaIndividual('${base}_notaIndividual', this.value, this)"
+                >
+              </label>
+
+              <label>
+                Comentário individual
+                <textarea
+                  rows="2"
+                  oninput="salvarCampo('${base}_comentarioIndividual', this.value)"
+                >${escapeHtml(state[`${base}_comentarioIndividual`] ?? "")}</textarea>
+              </label>
+            </div>
+          `;
+        }).join("")}
+      </details>
+
+      <details class="accordion" open>
+        <summary>Fotos do grupo</summary>
+
+        <p>
+          As fotos ficam salvas no aparelho e vinculadas a este grupo.
+        </p>
+
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onchange="uploadFotoIndexedDB(event, '${fotoKey}')"
+        >
+
+        <div id="fotosIndexedDB" class="gallery"></div>
+      </details>
+
+      <div class="export-actions">
+        <button class="secondary" onclick="exportarGrupoCSV('${semanaId}', '${turmaId}', '${grupoId}')">
+          Gerar Excel do grupo
+        </button>
+
+        <button class="secondary" onclick="gerarPDFGrupoAtual()">
+          Gerar PDF do grupo com fotos
+        </button>
+      </div>
     </div>
   `;
 
+  listarFotosIndexedDB(fotoKey);
   area.scrollIntoView({ behavior: "smooth" });
 };
 
@@ -955,6 +1169,179 @@ function renderGaleriaGrupo4(imagens) {
     </details>
   `;
 }
+
+/* ==============================
+   PROVAS E SIMULADOS
+================================*/
+
+function calcularNotaSimulado(acertos, total, notaMaxima) {
+  const a = Number(acertos);
+  const t = Number(total);
+  const n = Number(notaMaxima);
+
+  if (!Number.isFinite(a) || !Number.isFinite(t) || !Number.isFinite(n) || t <= 0) {
+    return 0;
+  }
+
+  return Number(((a / t) * n).toFixed(2));
+}
+
+window.renderSimulados = function() {
+  let area = document.getElementById("simuladosArea");
+
+  if (!area) {
+    area = document.createElement("section");
+    area.id = "simuladosArea";
+    area.className = "card";
+
+    const root = document.getElementById("app-root") || document.body;
+    root.appendChild(area);
+  }
+
+  if (!Array.isArray(state.simulados)) {
+    state.simulados = [];
+  }
+
+  area.innerHTML = `
+    <span class="badge">Provas e Simulados</span>
+    <h2>Calculadora de acertos e notas</h2>
+
+    <p>
+      Exemplo: se a prova tiver 50 questões e a nota máxima for 1,0,
+      então 20 acertos resultam em nota 0,4.
+    </p>
+
+    <div class="evaluation-grid">
+      <label>
+        Nome do aluno
+        <input id="simAluno" type="text" placeholder="Nome do aluno">
+      </label>
+
+      <label>
+        Acertos
+        <input id="simAcertos" type="number" min="0" step="1" placeholder="Ex: 20">
+      </label>
+
+      <label>
+        Total de questões
+        <input id="simTotal" type="number" min="1" step="1" placeholder="Ex: 50">
+      </label>
+
+      <label>
+        Nota máxima
+        <input id="simNotaMax" type="number" min="0" step="0.1" value="1">
+      </label>
+    </div>
+
+    <button class="secondary" onclick="adicionarAlunoSimulado()">
+      Adicionar aluno
+    </button>
+
+    <button class="secondary" onclick="exportarSimuladoCSV()">
+      Gerar Excel do simulado
+    </button>
+
+    <button class="secondary" onclick="limparSimulados()">
+      Limpar simulados
+    </button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th>Acertos</th>
+          <th>Total</th>
+          <th>Nota máxima</th>
+          <th>Nota calculada</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${state.simulados.map(item => `
+          <tr>
+            <td>${escapeHtml(item.aluno)}</td>
+            <td>${escapeHtml(item.acertos)}</td>
+            <td>${escapeHtml(item.total)}</td>
+            <td>${escapeHtml(item.notaMaxima)}</td>
+            <td>${escapeHtml(item.notaCalculada)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+};
+
+window.adicionarAlunoSimulado = function() {
+  const aluno = document.getElementById("simAluno")?.value || "";
+  const acertos = document.getElementById("simAcertos")?.value || "";
+  const total = document.getElementById("simTotal")?.value || "";
+  const notaMaxima = document.getElementById("simNotaMax")?.value || "1";
+
+  if (!aluno.trim()) {
+    alert("Digite o nome do aluno.");
+    return;
+  }
+
+  if (!Array.isArray(state.simulados)) {
+    state.simulados = [];
+  }
+
+  const notaCalculada = calcularNotaSimulado(acertos, total, notaMaxima);
+
+  state.simulados.push({
+    aluno,
+    acertos,
+    total,
+    notaMaxima,
+    notaCalculada
+  });
+
+  salvar();
+  renderSimulados();
+};
+
+window.exportarSimuladoCSV = function() {
+  if (!Array.isArray(state.simulados) || !state.simulados.length) {
+    alert("Nenhum aluno cadastrado no simulado.");
+    return;
+  }
+
+  const linhas = [
+    ["Aluno", "Acertos", "Total de questões", "Nota máxima", "Nota calculada"],
+    ...state.simulados.map(item => [
+      item.aluno,
+      item.acertos,
+      item.total,
+      item.notaMaxima,
+      String(item.notaCalculada).replace(".", ",")
+    ])
+  ];
+
+  const csv = linhas
+    .map(linha => linha.map(campo => `"${String(campo).replaceAll('"', '""')}"`).join(";"))
+    .join("\n");
+
+  const blob = new Blob(["\ufeff" + csv], {
+    type: "text/csv;charset=utf-8;"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = "provas_e_simulados.csv";
+  a.click();
+
+  URL.revokeObjectURL(url);
+};
+
+window.limparSimulados = function() {
+  const confirmar = confirm("Deseja limpar apenas a seção Provas e Simulados?");
+  if (!confirmar) return;
+
+  state.simulados = [];
+  salvar();
+  renderSimulados();
+};
 
 /* ==============================
    PWA
@@ -1000,5 +1387,6 @@ function registrarPWA() {
 
 renderSemanas();
 updateAnalytics();
+renderSimulados();
 configurarInstalacao();
 registrarPWA();

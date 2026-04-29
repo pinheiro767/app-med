@@ -363,7 +363,6 @@ window.salvarCampo = function(chave, valor) {
 };
 
 window.salvarNotaIndividual = function(chave, valor, input = null) {
-window.salvarNotaIndividual = function(chave, valor, input = null) {
   if (valor === "" || valor === null || valor === undefined) {
     delete state[chave];
     salvar();

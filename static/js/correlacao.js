@@ -1,4 +1,4 @@
-export function correlacaoPearson(x, y) {
+function correlacaoPearson(x, y) {
   if (!Array.isArray(x) || !Array.isArray(y)) return 0;
   if (x.length !== y.length) return 0;
   if (x.length < 2) return 0;
@@ -31,8 +31,7 @@ export function correlacaoPearson(x, y) {
     somaY2 += vy * vy;
   }
 
-  const numerador =
-    (n * somaXY) - (somaX * somaY);
+  const numerador = (n * somaXY) - (somaX * somaY);
 
   const denominador = Math.sqrt(
     (n * somaX2 - somaX * somaX) *

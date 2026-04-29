@@ -847,3 +847,29 @@ export const AVALIADORAS = [
   "Profª Drª Carmem Patrícia Barbosa",
   "Profª Drª Cláudia Pinheiro"
 ];
+export const CONFIGURACOES_EXTRAS = {
+  avaliacaoIndividual: true,
+  comentariosPorAluno: true,
+  manterFotosDosGrupos: true,
+  gerarPdfComFotos: true,
+  gerarExcelPorGrupo: true,
+  provasESimulados: true
+};
+
+export const CONFIG_SIMULADOS = {
+  titulo: "Provas e Simulados",
+  campos: [
+    "Nome do aluno",
+    "Quantidade de acertos",
+    "Total de questões",
+    "Nota máxima",
+    "Nota calculada"
+  ],
+  formula: "nota = (acertos / totalQuestoes) * notaMaxima",
+  exemplo: {
+    acertos: 20,
+    totalQuestoes: 50,
+    notaMaxima: 1,
+    notaCalculada: 0.4
+  }
+};

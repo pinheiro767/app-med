@@ -3,69 +3,97 @@ const STORE_FOTOS = "fotos";
 
 function abrirDB() {
   return new Promise((resolve, reject) => {
-
     const request = indexedDB.open(DB_NAME, 1);
 
-    request.onupgradeneeded = function(e) {
-      const db = e.target.result;
-      db.createObjectStore(STORE_FOTOS, { keyPath: "id", autoIncrement: true });
+    request.onupgradeneeded = function(event) {
+      const db = event.target.result;
+
+      if (!db.objectStoreNames.contains(STORE_FOTOS)) {
+        db.createObjectStore(STORE_FOTOS, {
+          keyPath: "id",
+          autoIncrement: true
+        });
+      }
     };
 
-    request.onsuccess = function(e) {
-      resolve(e.target.result);
+    request.onsuccess = function(event) {
+      resolve(event.target.result);
     };
 
-    request.onerror = function(e) {
-      reject(e);
+    request.onerror = function() {
+      reject(request.error);
     };
-
   });
 }
 
-export async function salvarFoto(grupo, file) {
+function salvarFoto(grupo, file) {
+  return new Promise(async (resolve, reject) => {
+    if (!grupo || !file || !file.type.startsWith("image/")) {
+      reject(new Error("Grupo ou arquivo de imagem inválido."));
+      return;
+    }
 
-  const db = await abrirDB();
-  const tx = db.transaction(STORE_FOTOS, "readwrite");
-  const store = tx.objectStore(STORE_FOTOS);
+    try {
+      const db = await abrirDB();
+      const tx = db.transaction(STORE_FOTOS, "readwrite");
+      const store = tx.objectStore(STORE_FOTOS);
 
-  const reader = new FileReader();
+      const reader = new FileReader();
 
-  reader.onload = function() {
-    store.add({
-      grupo,
-      imagem: reader.result,
-      data: new Date()
-    });
-  };
+      reader.onload = function() {
+        const request = store.add({
+          grupo,
+          nome: file.name,
+          tipo: file.type,
+          imagem: reader.result,
+          data: new Date().toISOString()
+        });
 
-  reader.readAsDataURL(file);
+        request.onsuccess = function() {
+          resolve(request.result);
+        };
+
+        request.onerror = function() {
+          reject(request.error);
+        };
+      };
+
+      reader.onerror = function() {
+        reject(reader.error);
+      };
+
+      reader.readAsDataURL(file);
+    } catch (error) {
+      reject(error);
+    }
+  });
 }
 
-export async function listarFotos(grupo) {
-
+async function listarFotos(grupo) {
   const db = await abrirDB();
   const tx = db.transaction(STORE_FOTOS, "readonly");
   const store = tx.objectStore(STORE_FOTOS);
 
-  return new Promise(resolve => {
-
+  return new Promise((resolve, reject) => {
     const fotos = [];
+    const request = store.openCursor();
 
-    store.openCursor().onsuccess = function(e) {
-      const cursor = e.target.result;
+    request.onsuccess = function(event) {
+      const cursor = event.target.result;
 
       if (cursor) {
-
         if (cursor.value.grupo === grupo) {
           fotos.push(cursor.value);
         }
 
         cursor.continue();
-
       } else {
         resolve(fotos);
       }
     };
 
+    request.onerror = function() {
+      reject(request.error);
+    };
   });
 }

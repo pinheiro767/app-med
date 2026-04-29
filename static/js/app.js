@@ -46,7 +46,6 @@ function normalizarNota(valor) {
 
   if (!Number.isFinite(n)) return "";
   if (n < 0) n = 0;
-  if (n > 0.1) n = 0.1;
 
   return Number(n.toFixed(2));
 }
@@ -58,7 +57,6 @@ function normalizarNotaIndividual(valor) {
 
   if (!Number.isFinite(n)) return "";
   if (n < 0) n = 0;
-  if (n > 1) n = 1;
 
   return Number(n.toFixed(2));
 }
@@ -626,7 +624,7 @@ function renderGrafico(linhas) {
       scales: {
         y: {
           beginAtZero: true,
-          max: 0.1
+          suggestedMax: 1
         }
       }
     }
@@ -1046,8 +1044,8 @@ window.abrirGrupo = function(semanaId, turmaId, grupoId) {
         <summary>Avaliação do grupo</summary>
 
         <p>
-          Cada critério vale de <strong>0 até 0,1</strong>.
-          Se for digitado valor maior, o sistema corrige automaticamente para <strong>0,10</strong>.
+          Digite a nota desejada para cada critério.
+          O campo aceita valores livres e pode ser apagado quando necessário.
         </p>
 
         ${CRITERIOS_GERAIS.map((criterio, index) => {
@@ -1060,14 +1058,14 @@ window.abrirGrupo = function(semanaId, turmaId, grupoId) {
 
               <label>
                 Carmem
-                <input type="number" min="0" max="0.1" step="0.01"
+                <input type="number" min="0" step="0.01"
                   value="${escapeHtml(state[kCarmem] ?? "")}"
                   oninput="salvarNota('${kCarmem}', this.value, this)">
               </label>
 
               <label>
                 Cláudia
-                <input type="number" min="0" max="0.1" step="0.01"
+                <input type="number" min="0" step="0.01"
                   value="${escapeHtml(state[kClaudia] ?? "")}"
                   oninput="salvarNota('${kClaudia}', this.value, this)">
               </label>
@@ -1102,7 +1100,6 @@ window.abrirGrupo = function(semanaId, turmaId, grupoId) {
                 <input
                   type="number"
                   min="0"
-                  max="1"
                   step="0.01"
                   value="${escapeHtml(state[`${base}_notaIndividual`] ?? "")}"
                   oninput="salvarNotaIndividual('${base}_notaIndividual', this.value, this)"
@@ -1203,70 +1200,79 @@ window.renderSimulados = function() {
   }
 
   area.innerHTML = `
-    <span class="badge">Provas e Simulados</span>
-    <h2>Calculadora de acertos e notas</h2>
+    <details class="accordion">
+      <summary>Provas e Simulados</summary>
 
-    <p>
-      Exemplo: se a prova tiver 50 questões e a nota máxima for 1,0,
-      então 20 acertos resultam em nota 0,4.
-    </p>
+      <span class="badge">Provas e Simulados</span>
+      <h2>Calculadora de acertos e notas</h2>
 
-    <div class="evaluation-grid">
-      <label>
-        Nome do aluno
-        <input id="simAluno" type="text" placeholder="Nome do aluno">
-      </label>
+      <p>
+        Cadastre alunos, informe a quantidade de acertos, o total de questões e a nota máxima.
+        O sistema calcula automaticamente a nota final.
+      </p>
 
-      <label>
-        Acertos
-        <input id="simAcertos" type="number" min="0" step="1" placeholder="Ex: 20">
-      </label>
+      <p>
+        Exemplo: se a prova tiver 50 questões e a nota máxima for 1,0,
+        então 20 acertos resultam em nota 0,4.
+      </p>
 
-      <label>
-        Total de questões
-        <input id="simTotal" type="number" min="1" step="1" placeholder="Ex: 50">
-      </label>
+      <div class="evaluation-grid">
+        <label>
+          Nome do aluno
+          <input id="simAluno" type="text" placeholder="Nome do aluno">
+        </label>
 
-      <label>
-        Nota máxima
-        <input id="simNotaMax" type="number" min="0" step="0.1" value="1">
-      </label>
-    </div>
+        <label>
+          Acertos
+          <input id="simAcertos" type="number" min="0" step="1" placeholder="Ex: 20">
+        </label>
 
-    <button class="secondary" onclick="adicionarAlunoSimulado()">
-      Adicionar aluno
-    </button>
+        <label>
+          Total de questões
+          <input id="simTotal" type="number" min="1" step="1" placeholder="Ex: 50">
+        </label>
 
-    <button class="secondary" onclick="exportarSimuladoCSV()">
-      Gerar Excel do simulado
-    </button>
+        <label>
+          Nota máxima
+          <input id="simNotaMax" type="number" min="0" step="0.1" value="1">
+        </label>
+      </div>
 
-    <button class="secondary" onclick="limparSimulados()">
-      Limpar simulados
-    </button>
+      <button class="secondary" onclick="adicionarAlunoSimulado()">
+        Adicionar aluno
+      </button>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Aluno</th>
-          <th>Acertos</th>
-          <th>Total</th>
-          <th>Nota máxima</th>
-          <th>Nota calculada</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${state.simulados.map(item => `
+      <button class="secondary" onclick="exportarSimuladoCSV()">
+        Gerar Excel do simulado
+      </button>
+
+      <button class="secondary" onclick="limparSimulados()">
+        Limpar simulados
+      </button>
+
+      <table>
+        <thead>
           <tr>
-            <td>${escapeHtml(item.aluno)}</td>
-            <td>${escapeHtml(item.acertos)}</td>
-            <td>${escapeHtml(item.total)}</td>
-            <td>${escapeHtml(item.notaMaxima)}</td>
-            <td>${escapeHtml(item.notaCalculada)}</td>
+            <th>Aluno</th>
+            <th>Acertos</th>
+            <th>Total</th>
+            <th>Nota máxima</th>
+            <th>Nota calculada</th>
           </tr>
-        `).join("")}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          ${state.simulados.map(item => `
+            <tr>
+              <td>${escapeHtml(item.aluno)}</td>
+              <td>${escapeHtml(item.acertos)}</td>
+              <td>${escapeHtml(item.total)}</td>
+              <td>${escapeHtml(item.notaMaxima)}</td>
+              <td>${escapeHtml(item.notaCalculada)}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </details>
   `;
 };
 

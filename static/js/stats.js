@@ -1,20 +1,45 @@
-export function media(arr){
-  return arr.reduce((a,b)=>a+b,0)/arr.length;
+function media(arr) {
+  if (!Array.isArray(arr) || arr.length === 0) return 0;
+
+  const nums = arr
+    .map(Number)
+    .filter(v => Number.isFinite(v));
+
+  if (nums.length === 0) return 0;
+
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
 }
 
-export function mediana(arr){
-  const s=[...arr].sort((a,b)=>a-b);
-  const mid=Math.floor(s.length/2);
-  return s.length%2?s[mid]:(s[mid-1]+s[mid])/2;
+function mediana(arr) {
+  if (!Array.isArray(arr) || arr.length === 0) return 0;
+
+  const nums = arr
+    .map(Number)
+    .filter(v => Number.isFinite(v))
+    .sort((a, b) => a - b);
+
+  if (nums.length === 0) return 0;
+
+  const mid = Math.floor(nums.length / 2);
+
+  return nums.length % 2
+    ? nums[mid]
+    : (nums[mid - 1] + nums[mid]) / 2;
 }
 
-export function desvioPadrao(arr){
+function desvioPadrao(arr) {
+  if (!Array.isArray(arr) || arr.length === 0) return 0;
 
-  const m=media(arr);
+  const nums = arr
+    .map(Number)
+    .filter(v => Number.isFinite(v));
 
-  const variancia=arr.reduce((sum,v)=>{
-    return sum+(v-m)**2
-  },0)/arr.length;
+  if (nums.length === 0) return 0;
+
+  const m = media(nums);
+
+  const variancia =
+    nums.reduce((sum, v) => sum + (v - m) ** 2, 0) / nums.length;
 
   return Math.sqrt(variancia);
 }
